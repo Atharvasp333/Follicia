@@ -1,22 +1,38 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Playfair_Display, Montserrat, Inter } from "next/font/google";
 import "./globals.css";
+
+/* ─── Font loading (Next.js optimised, no @import needed in CSS) ──── */
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-montserrat",
+  display: "swap",
+});
 
 const inter = Inter({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   variable: "--font-inter",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Follicia — Clinical-Chic Hair & Scalp Care",
+  title: "Follicia — AI-Powered Clinical Hair & Scalp Care",
   description:
-    "Personalized, AI-powered hair care solutions. Clinically formulated, beautifully designed for you.",
-  keywords: ["hair care", "scalp health", "AI beauty", "clinical", "personalized"],
-  authors: [{ name: "Follicia" }],
+    "Stop the trial-and-error. Follicia uses AI to analyse your unique scalp biology and deliver a clinical-grade hair regimen formulated exclusively for you.",
+  keywords: ["hair care", "scalp analysis", "AI hair", "clinical hair", "personalised hair regimen"],
   openGraph: {
-    title: "Follicia — Clinical-Chic Hair & Scalp Care",
-    description: "Personalized, AI-powered hair care solutions.",
+    title: "Follicia — AI-Powered Clinical Hair & Scalp Care",
+    description: "Clinical-Chic hair science, now personalised by AI.",
     type: "website",
   },
 };
@@ -27,8 +43,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} antialiased`}>{children}</body>
+    <html
+      lang="en"
+      className={`${playfair.variable} ${montserrat.variable} ${inter.variable}`}
+    >
+      <body>{children}</body>
     </html>
   );
 }
