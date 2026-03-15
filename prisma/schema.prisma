@@ -20,8 +20,8 @@ model User {
   hairType       String?  // e.g. "straight", "wavy", "curly", "coily"
   porosity       String?  // e.g. "low", "medium", "high"
   scalpCondition String?  // e.g. "oily", "dry", "normal", "sensitive"
-  // Optional Clerk link (populated after auth setup)
-  clerkId        String?  @unique
+  // Firebase authentication UID
+  firebaseUid    String?  @unique
   imageUrl       String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

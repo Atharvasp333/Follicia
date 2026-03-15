@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Montserrat, Inter } from "next/font/google";
 import "./globals.css";
+import { AuthModalProvider } from "@/contexts/AuthModalContext";
 
 /* ─── Font loading (Next.js optimised, no @import needed in CSS) ──── */
 const playfair = Playfair_Display({
@@ -47,7 +48,11 @@ export default function RootLayout({
       lang="en"
       className={`${playfair.variable} ${montserrat.variable} ${inter.variable}`}
     >
-      <body>{children}</body>
+      <body className="antialiased font-inter">
+        <AuthModalProvider>
+          {children}
+        </AuthModalProvider>
+      </body>
     </html>
   );
 }

@@ -16,11 +16,15 @@ import {
   BookOpen,
   Info,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+
+import { useAuthModal } from "@/contexts/AuthModalContext";
 
 interface NavbarProps {
-  onLoginClick: () => void;
   cartCount?: number;
 }
 
@@ -46,11 +50,15 @@ function Sidebar({
   onClose,
   onLoginClick,
   cartCount,
+  dbUser,
+  currentUser,
 }: {
   open: boolean;
   onClose: () => void;
   onLoginClick: () => void;
   cartCount: number;
+  dbUser: any;
+  currentUser: any;
 }) {
   // Lock body scroll when open
   useEffect(() => {
@@ -271,32 +279,58 @@ function Sidebar({
                 </button>
               </Link>
 
-              {/* Login */}
-              <button
-                onClick={() => {
-                  onClose();
-                  onLoginClick();
-                }}
-                style={{
-                  width: "100%",
-                  padding: "0.7rem",
-                  borderRadius: "9999px",
-                  border: "1.5px solid rgba(212,175,55,0.5)",
-                  background: "rgba(212,175,55,0.08)",
-                  color: "#D4AF37",
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontWeight: 600,
-                  fontSize: "0.85rem",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                }}
-              >
-                <User size={15} />
-                Login / Sign Up
-              </button>
+              {/* Login / Dashboard */}
+              {dbUser || currentUser ? (
+                <Link href="/dashboard" onClick={onClose} style={{ textDecoration: 'none' }}>
+                  <button
+                    style={{
+                      width: "100%",
+                      padding: "0.7rem",
+                      borderRadius: "9999px",
+                      border: "1.5px solid rgba(212,175,55,0.5)",
+                      background: "rgba(212,175,55,0.08)",
+                      color: "#D4AF37",
+                      fontFamily: "'Montserrat', sans-serif",
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <User size={15} />
+                    {dbUser?.name || "Dashboard"}
+                  </button>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onLoginClick();
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "0.7rem",
+                    borderRadius: "9999px",
+                    border: "1.5px solid rgba(212,175,55,0.5)",
+                    background: "rgba(212,175,55,0.08)",
+                    color: "#D4AF37",
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: 600,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <User size={15} />
+                  Login / Sign Up
+                </button>
+              )}
 
               {/* Take quiz */}
               <button
@@ -320,12 +354,18 @@ function Sidebar({
 }
 
 /* ── Main Navbar ─────────────────────────────────────────────────────── */
+
+interface NavbarProps {
+  cartCount?: number;
+}
+
 export default function Navbar({
-  onLoginClick,
   cartCount = 0,
 }: NavbarProps) {
+  const { openModal, dbUser, currentUser, isLoading } = useAuthModal();
   const [scrolled, setScrolled] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 24);
@@ -343,12 +383,13 @@ export default function Navbar({
 
   return (
     <>
-      {/* Sidebar */}
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        onLoginClick={onLoginClick}
+        onLoginClick={openModal}
         cartCount={cartCount}
+        dbUser={dbUser}
+        currentUser={currentUser}
       />
 
       {/* Top bar */}
@@ -452,28 +493,139 @@ export default function Navbar({
             </motion.button>
 
             {/* Profile */}
-            <motion.button
-              whileTap={{ scale: 0.94 }}
-              onClick={onLoginClick}
-              aria-label="Profile"
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                background: "transparent",
-                border: "none",
-                color: iconColor,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                transition: "opacity 0.25s ease",
-              }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "0.7")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "1")}
-            >
-              <User size={22} />
-            </motion.button>
+            {dbUser || currentUser ? (
+              <div style={{ position: 'relative' }}>
+                <motion.button
+                  whileTap={{ scale: 0.94 }}
+                  onClick={() => setProfileDropdownOpen((prev) => !prev)}
+                  aria-label="Profile Menu"
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    background: "#0D3B44", // Dark Teal
+                    border: "none",
+                    color: "#F4F7F5", // Off-white
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
+                    fontSize: "1rem",
+                    transition: "opacity 0.25s ease",
+                  }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "0.8")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "1")}
+                >
+                  {dbUser?.name ? dbUser.name.charAt(0).toUpperCase() : (currentUser?.email ? currentUser.email.charAt(0).toUpperCase() : "U")}
+                </motion.button>
+
+                <AnimatePresence>
+                  {profileDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      style={{
+                        position: 'absolute',
+                        top: '50px',
+                        right: 0,
+                        width: '180px',
+                        background: '#FFFFFF',
+                        borderRadius: '12px',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                        border: '1px solid #E5E7EB',
+                        padding: '0.5rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.25rem',
+                        zIndex: 100
+                      }}
+                    >
+                      <Link href="/dashboard" onClick={() => setProfileDropdownOpen(false)} style={{ textDecoration: 'none' }}>
+                        <div style={{
+                          padding: '0.75rem 1rem',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          color: '#1A1A1A',
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '0.9rem',
+                          cursor: 'pointer',
+                          transition: 'background 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => ((e.currentTarget).style.background = '#F3F4F6')}
+                        onMouseLeave={(e) => ((e.currentTarget).style.background = 'transparent')}
+                        >
+                          <User size={16} color="#6B7280" />
+                          <span>Dashboard</span>
+                        </div>
+                      </Link>
+
+                      <div style={{ height: '1px', background: '#E5E7EB', margin: '0.25rem 0' }} />
+
+                      <button
+                        onClick={async () => {
+                          setProfileDropdownOpen(false);
+                          try {
+                            await signOut(auth);
+                            console.log('User signed out.');
+                          } catch (error) {
+                            console.error('Error signing out: ', error);
+                          }
+                        }}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          padding: '0.75rem 1rem',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          color: '#EF4444',
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '0.9rem',
+                          cursor: 'pointer',
+                          transition: 'background 0.2s ease',
+                          textAlign: 'left'
+                        }}
+                        onMouseEnter={(e) => ((e.currentTarget).style.background = '#FEF2F2')}
+                        onMouseLeave={(e) => ((e.currentTarget).style.background = 'transparent')}
+                      >
+                        <LogOut size={16} color="#EF4444" />
+                        <span>Sign Out</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <motion.button
+                whileTap={{ scale: 0.94 }}
+                onClick={openModal}
+                aria-label="Profile"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  background: "transparent",
+                  border: "none",
+                  color: iconColor,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  transition: "opacity 0.25s ease",
+                }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "0.7")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.opacity = "1")}
+              >
+                <User size={22} />
+              </motion.button>
+            )}
 
             {/* Cart */}
             <Link href="/cart" style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>

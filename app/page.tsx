@@ -16,7 +16,6 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import AuthModal from "@/components/AuthModal";
 import Footer from "@/components/Footer";
 import HeroCarousel from "@/components/HeroCarousel";
 import MarqueeBanner from "@/components/MarqueeBanner";
@@ -125,16 +124,14 @@ function ComparisonChart() {
 
 /* ── Page ───────────────────────────────────────────────── */
 export default function HomePage() {
-  const [modalOpen, setModalOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
   return (
     <main
       style={{ background: "#F4F7F5", minHeight: "100vh", overflowX: "hidden" }}
     >
-      {/* ── Shared navbar & auth modal ──────────────────── */}
-      <Navbar onLoginClick={() => setModalOpen(true)} cartCount={cartCount} />
-      <AuthModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      {/* ── Shared navbar ──────────────────── */}
+      <Navbar cartCount={cartCount} />
 
       {/* ══ HERO CAROUSEL ════════════════════════════════ */}
       <HeroCarousel />
