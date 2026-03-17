@@ -1,0 +1,325 @@
+{
+  "brandName": "Follicia",
+  "tagline": "Clinical-Chic Design System v3",
+  "description": "Deep Forest Teal #0D3B44 | Goldenrod #D4AF37 | Seafoam #2A9D8F",
+  
+  "colors": {
+    "primary": {
+      "teal": "#0D3B44",
+      "tealMid": "#1A5568",
+      "tealLight": "#2A7A8A",
+      "description": "Primary brand color - Deep forest teal used for headers, primary buttons, and key UI elements"
+    },
+    "secondary": {
+      "gold": "#D4AF37",
+      "goldLight": "#E8CC6A",
+      "description": "Secondary accent - Goldenrod used for premium badges, highlights, and CTAs"
+    },
+    "accent": {
+      "seafoam": "#2A9D8F",
+      "seafoamLight": "#4DBCB0",
+      "description": "Accent color - Seafoam used for interactive elements, links, and scalp care products"
+    },
+    "backgrounds": {
+      "cream": "#F4F7F5",
+      "offWhite": "#FAFCFB",
+      "white": "#FFFFFF",
+      "description": "Background colors - Cream for main sections, off-white for cards"
+    },
+    "neutrals": {
+      "lightGray": "#E8EDEB",
+      "borderGray": "#D5E0DC",
+      "midGray": "#9AABA5",
+      "darkText": "#1C2B28",
+      "bodyText": "#4A6B63",
+      "description": "Neutral palette for borders, text, and subtle UI elements"
+    },
+    "special": {
+      "shopNow": "#E2F33E",
+      "description": "Hero CTA accent - Bright yellow-green for primary Shop Now button"
+    },
+    "glass": {
+      "background": "rgba(244, 247, 245, 0.8)",
+      "backgroundDark": "rgba(13, 59, 68, 0.9)",
+      "border": "rgba(42, 157, 143, 0.2)",
+      "shadow": "0 8px 32px rgba(13, 59, 68, 0.08)",
+      "description": "Glass morphism effects with backdrop blur"
+    }
+  },
+
+  "typography": {
+    "fontFamilies": {
+      "display": "'Playfair Display', Georgia, serif",
+      "body": "'Montserrat', system-ui, sans-serif",
+      "sans": "'Inter', system-ui, sans-serif",
+      "description": "Playfair Display for headers, Montserrat for UI/buttons, Inter for body text"
+    },
+    "letterSpacing": {
+      "logo": "0.22em",
+      "sectionLabel": "0.2em",
+      "badge": "0.06em",
+      "button": "0.1em",
+      "description": "Letter spacing values for different text elements"
+    },
+    "fontSizes": {
+      "logo": "1.45rem",
+      "h1": "clamp(2rem, 4vw, 3rem)",
+      "h2": "clamp(1.8rem, 4vw, 3rem)",
+      "h3": "1.15rem",
+      "sectionLabel": "0.65rem",
+      "body": "0.95rem",
+      "bodySmall": "0.85rem",
+      "badge": "0.6rem",
+      "description": "Responsive font sizes using clamp for fluid typography"
+    },
+    "fontWeights": {
+      "regular": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700,
+      "extrabold": 800
+    }
+  },
+
+  "spacing": {
+    "section": "6rem 1.5rem",
+    "sectionMobile": "4rem 1.5rem",
+    "cardPadding": "2rem",
+    "buttonPadding": "0.75rem 2rem",
+    "buttonPaddingLarge": "1rem 2.5rem",
+    "description": "Consistent spacing for sections, cards, and interactive elements"
+  },
+
+  "geometry": {
+    "borderRadius": {
+      "sm": "0.375rem",
+      "md": "0.5rem",
+      "lg": "0.75rem",
+      "xl": "1rem",
+      "2xl": "1.25rem",
+      "3xl": "1.5rem",
+      "full": "9999px",
+      "productCard": "1.25rem",
+      "modal": "1.5rem",
+      "button": "9999px",
+      "description": "Border radius scale - Product cards use 1.25rem, modals use 1.5rem, buttons are fully rounded"
+    },
+    "shadows": {
+      "card": "0 2px 12px rgba(13,59,68,0.05)",
+      "cardHover": "0 16px 40px rgba(13,59,68,0.12)",
+      "modal": "0 32px 80px rgba(0,0,0,0.18)",
+      "glass": "0 8px 32px rgba(13, 59, 68, 0.08)",
+      "cta": "0 32px 80px rgba(13,59,68,0.2)",
+      "description": "Layered shadow system for depth and elevation"
+    },
+    "blur": {
+      "glass": "20px",
+      "backdrop": "12px",
+      "backdropLight": "8px",
+      "description": "Backdrop blur values for glass morphism effects"
+    },
+    "borders": {
+      "default": "1px solid #E8EDEB",
+      "glass": "1px solid rgba(42, 157, 143, 0.18)",
+      "glassDark": "1px solid rgba(42, 157, 143, 0.25)",
+      "input": "1px solid #D5E0DC",
+      "description": "Border styles for cards, glass effects, and form inputs"
+    }
+  },
+
+  "animations": {
+    "easing": {
+      "brand": [0.22, 1, 0.36, 1],
+      "description": "Custom cubic-bezier easing curve for smooth, premium animations"
+    },
+    "durations": {
+      "fast": "0.18s",
+      "normal": "0.25s",
+      "medium": "0.3s",
+      "slow": "0.45s",
+      "verySlow": "0.7s",
+      "description": "Animation duration scale"
+    },
+    "transitions": {
+      "button": "all 0.25s ease",
+      "card": "all 0.3s ease",
+      "hover": "transform 0.3s ease",
+      "description": "Common transition patterns"
+    },
+    "keyframes": {
+      "float": "translateY(0) → translateY(-12px) → translateY(0) over 4s",
+      "fadeInUp": "opacity 0, y: 24px → opacity 1, y: 0 over 0.7s",
+      "description": "Custom keyframe animations"
+    }
+  },
+
+  "components": {
+    "buttons": {
+      "primary": {
+        "background": "#0D3B44",
+        "color": "#FFFFFF",
+        "borderRadius": "9999px",
+        "padding": "0.75rem 2rem",
+        "fontWeight": 600,
+        "hover": {
+          "background": "#1A5568",
+          "transform": "translateY(-2px)"
+        }
+      },
+      "gold": {
+        "background": "linear-gradient(135deg, #D4AF37, #E8CC6A)",
+        "color": "#0D3B44",
+        "borderRadius": "9999px",
+        "padding": "0.75rem 2rem",
+        "fontWeight": 700,
+        "hover": {
+          "transform": "translateY(-2px)"
+        }
+      },
+      "outline": {
+        "background": "transparent",
+        "color": "#0D3B44",
+        "border": "1.5px solid #0D3B44",
+        "borderRadius": "9999px",
+        "padding": "0.75rem 2rem",
+        "fontWeight": 600,
+        "hover": {
+          "background": "#0D3B44",
+          "color": "#F4F7F5",
+          "transform": "translateY(-2px)"
+        }
+      },
+      "shopNow": {
+        "background": "#E2F33E",
+        "color": "#0D0D0D",
+        "borderRadius": "0",
+        "padding": "1rem 2rem",
+        "fontWeight": 700,
+        "letterSpacing": "0.1em",
+        "textTransform": "uppercase"
+      }
+    },
+    "badges": {
+      "seafoam": {
+        "background": "rgba(42, 157, 143, 0.12)",
+        "border": "1px solid rgba(42, 157, 143, 0.3)",
+        "color": "#2A9D8F",
+        "borderRadius": "9999px",
+        "padding": "3px 10px",
+        "fontSize": "0.6rem",
+        "fontWeight": 700,
+        "letterSpacing": "0.06em",
+        "textTransform": "uppercase"
+      },
+      "gold": {
+        "background": "rgba(212, 175, 55, 0.1)",
+        "border": "1px solid rgba(212, 175, 55, 0.35)",
+        "color": "#B8860B",
+        "borderRadius": "9999px",
+        "padding": "3px 9px",
+        "fontSize": "0.6rem",
+        "fontWeight": 700
+      },
+      "bestseller": {
+        "background": "linear-gradient(135deg, #D4AF37, #E8CC6A)",
+        "border": "none",
+        "color": "#0D3B44",
+        "borderRadius": "9999px",
+        "padding": "3px 10px",
+        "fontSize": "0.58rem",
+        "fontWeight": 700,
+        "letterSpacing": "0.07em",
+        "textTransform": "uppercase"
+      }
+    },
+    "cards": {
+      "product": {
+        "background": "#FFFFFF",
+        "borderRadius": "1.25rem",
+        "border": "1px solid #E8EDEB",
+        "boxShadow": "0 2px 12px rgba(13,59,68,0.05)",
+        "hover": {
+          "transform": "translateY(-6px)",
+          "boxShadow": "0 20px 48px rgba(13, 59, 68, 0.12)"
+        }
+      },
+      "glass": {
+        "background": "rgba(244, 247, 245, 0.82)",
+        "backdropFilter": "blur(20px)",
+        "border": "1px solid rgba(42, 157, 143, 0.18)",
+        "borderRadius": "1.25rem",
+        "boxShadow": "0 8px 32px rgba(13, 59, 68, 0.08)"
+      }
+    },
+    "navbar": {
+      "background": "transparent",
+      "scrolledBackground": "rgba(244,247,245,0.92)",
+      "backdropFilter": "blur(12px)",
+      "iconColor": "#1A1A1A",
+      "logoLetterSpacing": "0.22em",
+      "height": "auto",
+      "padding": "1rem 1.5rem"
+    },
+    "modal": {
+      "backdrop": "rgba(0,0,0,0.45)",
+      "backdropFilter": "blur(8px)",
+      "background": "#FFFFFF",
+      "borderRadius": "1.5rem",
+      "boxShadow": "0 32px 80px rgba(0,0,0,0.18)",
+      "border": "1px solid #E8EDEB"
+    }
+  },
+
+  "gradients": {
+    "tealToSeafoam": "linear-gradient(135deg, #0D3B44, #2A9D8F)",
+    "goldGradient": "linear-gradient(135deg, #D4AF37, #E8CC6A)",
+    "progressBar": "linear-gradient(90deg, #2A9D8F, #0D3B44)",
+    "ctaBanner": "linear-gradient(135deg, #2A9D8F 0%, #0D3B44 100%)",
+    "radialGlow": "radial-gradient(ellipse at 60% 40%, {color}22 0%, transparent 70%)",
+    "description": "Brand gradient combinations for backgrounds and effects"
+  },
+
+  "categoryColors": {
+    "scalpCare": {
+      "accent": "#2A9D8F",
+      "background": "rgba(42,157,143,0.06)"
+    },
+    "treatments": {
+      "accent": "#D4AF37",
+      "background": "rgba(212,175,55,0.06)"
+    },
+    "conditioning": {
+      "accent": "#4DBCB0",
+      "background": "rgba(77,188,176,0.06)"
+    },
+    "cleansing": {
+      "accent": "#0D3B44",
+      "background": "rgba(13,59,68,0.05)"
+    }
+  },
+
+  "breakpoints": {
+    "mobile": "540px",
+    "tablet": "767px",
+    "desktop": "1023px",
+    "wide": "1280px",
+    "description": "Responsive breakpoints for media queries"
+  },
+
+  "usage": {
+    "notes": [
+      "Use Playfair Display for all headers and hero text",
+      "Use Montserrat for UI elements, buttons, and labels",
+      "Use Inter for body text and descriptions",
+      "Product cards always use 1.25rem border radius",
+      "Modals use 1.5rem border radius",
+      "All buttons are fully rounded (9999px) except Shop Now (0)",
+      "Glass effects use backdrop-blur(20px) with 82% opacity",
+      "Hover states typically include translateY(-2px) or translateY(-6px)",
+      "Section labels use 0.2em letter spacing and uppercase",
+      "Logo uses 0.22em letter spacing",
+      "Primary CTA color is #E2F33E (bright yellow-green)",
+      "Use custom easing [0.22, 1, 0.36, 1] for all animations"
+    ]
+  }
+}

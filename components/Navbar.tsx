@@ -23,13 +23,10 @@ import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 
 import { useAuthModal } from "@/contexts/AuthModalContext";
-
-interface NavbarProps {
-  cartCount?: number;
-}
+import { useCart } from "@/contexts/CartContext";
 
 const NAV_LINKS = [
-  { label: "Shop", href: "#products", icon: <ShoppingCart size={16} /> },
+  { label: "Shop", href: "/shop", icon: <ShoppingCart size={16} /> },
   { label: "Consultation", href: "#how-it-works", icon: <FlaskConical size={16} /> },
   { label: "Science", href: "#science", icon: <BookOpen size={16} /> },
   { label: "About", href: "#about", icon: <Info size={16} /> },
@@ -37,7 +34,7 @@ const NAV_LINKS = [
 
 const SIDEBAR_LINKS = [
   { label: "Home", href: "/", icon: <Home size={18} /> },
-  { label: "Shop All", href: "#products", icon: <ShoppingCart size={18} /> },
+  { label: "Shop All", href: "/shop", icon: <ShoppingCart size={18} /> },
   { label: "Consultation", href: "#how-it-works", icon: <FlaskConical size={18} /> },
   { label: "Science", href: "#science", icon: <FlaskConical size={18} /> },
   { label: "My Routine", href: "/dashboard", icon: <BookOpen size={18} /> },
@@ -49,17 +46,16 @@ function Sidebar({
   open,
   onClose,
   onLoginClick,
-  cartCount,
   dbUser,
   currentUser,
 }: {
   open: boolean;
   onClose: () => void;
   onLoginClick: () => void;
-  cartCount: number;
   dbUser: any;
   currentUser: any;
 }) {
+  const { cartCount } = useCart();
   // Lock body scroll when open
   useEffect(() => {
     if (open) {
@@ -356,13 +352,14 @@ function Sidebar({
 /* ── Main Navbar ─────────────────────────────────────────────────────── */
 
 interface NavbarProps {
-  cartCount?: number;
+  isFixed?: boolean;
 }
 
 export default function Navbar({
-  cartCount = 0,
+  isFixed = false,
 }: NavbarProps) {
   const { openModal, dbUser, currentUser, isLoading } = useAuthModal();
+  const { cartCount } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -387,7 +384,6 @@ export default function Navbar({
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onLoginClick={openModal}
-        cartCount={cartCount}
         dbUser={dbUser}
         currentUser={currentUser}
       />
@@ -398,13 +394,19 @@ export default function Navbar({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         style={{
-          position: "absolute",
+          position: isFixed ? "fixed" : "absolute",
           top: 0,
           left: 0,
           right: 0,
           zIndex: 50,
           padding: "1rem 1.5rem",
-          pointerEvents: "none", // Let clicks pass through empty space to the carousel
+          pointerEvents: "none",
+          ...(isFixed && {
+            background: scrolled ? "rgba(244,247,245,0.92)" : "transparent",
+            backdropFilter: scrolled ? "blur(12px)" : "none",
+            borderBottom: scrolled ? "1px solid rgba(213,224,220,0.5)" : "none",
+            transition: "background 0.3s ease, backdrop-filter 0.3s ease",
+          }),
         }}
       >
         <div

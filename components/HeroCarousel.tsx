@@ -147,6 +147,43 @@ export default function HeroCarousel() {
             style={{ objectFit: "cover", objectPosition: "center", pointerEvents: "none" }}
             sizes="100vw"
           />
+
+          {/* ── Shop Now Button ── */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "10%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 5,
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+              pointerEvents: "none", // Allow clicks to pass through to the container if needed, but the button itself will have pointerEvents: auto
+            }}
+          >
+            <motion.a
+              href="/shop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              whileHover={{ scale: 1.05 }}
+              className="px-12 py-4 text-black font-bold uppercase tracking-wide cursor-pointer"
+              style={{
+                backgroundColor: "#E2F33E",
+                borderRadius: "0",
+                fontSize: "1rem",
+                textDecoration: "none",
+                pointerEvents: "auto",
+                border: "none",
+                outline: "none",
+                display: "inline-block",
+              }}
+            >
+              SHOP NOW
+            </motion.a>
+          </div>
         </motion.div>
       </AnimatePresence>
 

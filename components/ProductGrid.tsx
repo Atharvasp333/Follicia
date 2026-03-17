@@ -10,6 +10,7 @@ import {
   CheckCircle,
   ArrowRight,
 } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 
 /* ── Data ────────────────────────────────────────────────────────────── */
 const products = [
@@ -105,6 +106,27 @@ function ProductCard({
   onAdd: () => void;
 }) {
   const [added, setAdded] = useState(false);
+  const { addToCart } = useCart();
+
+  const handleAddToCart = async () => {
+    console.log("🔘 Add to Cart button clicked for:", p.name);
+    
+    // Extract price number from string like "₹2,490"
+    const priceNumber = parseFloat(p.price.replace(/[₹,]/g, ""));
+    
+    await addToCart({
+      productId: p.id,
+      name: p.name,
+      price: priceNumber,
+      priceDisplay: p.price,
+      imageUrl: null,
+      category: "Product", // You can map this from subtitle or add category to products array
+    });
+    
+    setAdded(true);
+    onAdd(); // Trigger toast
+    setTimeout(() => setAdded(false), 1800);
+  };
 
   return (
     <motion.article
@@ -322,11 +344,7 @@ function ProductCard({
           <motion.button
             whileHover={{ scale: 1.06 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              setAdded(true);
-              onAdd();
-              setTimeout(() => setAdded(false), 1800);
-            }}
+            onClick={handleAddToCart}
             id={`add-cart-${p.id}`}
             style={{
               display: "inline-flex",

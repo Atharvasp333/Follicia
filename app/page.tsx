@@ -20,6 +20,7 @@ import Footer from "@/components/Footer";
 import HeroCarousel from "@/components/HeroCarousel";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import ProductGrid from "@/components/ProductGrid";
+import Toast from "@/components/Toast";
 
 /* ── Animation helpers ──────────────────────────────────── */
 const E: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -124,14 +125,24 @@ function ComparisonChart() {
 
 /* ── Page ───────────────────────────────────────────────── */
 export default function HomePage() {
-  const [cartCount, setCartCount] = useState(0);
+  const [showToast, setShowToast] = useState(false);
+
+  const handleAddToCart = () => {
+    setShowToast(true);
+  };
 
   return (
     <main
       style={{ background: "#F4F7F5", minHeight: "100vh", overflowX: "hidden" }}
     >
       {/* ── Shared navbar ──────────────────── */}
-      <Navbar cartCount={cartCount} />
+      <Navbar />
+
+      <Toast 
+        message="Added to cart!" 
+        isVisible={showToast} 
+        onClose={() => setShowToast(false)} 
+      />
 
       {/* ══ HERO CAROUSEL ════════════════════════════════ */}
       <HeroCarousel />
@@ -140,7 +151,7 @@ export default function HomePage() {
       <MarqueeBanner />
 
       {/* ══ PRODUCT GRID ═════════════════════════════════ */}
-      <ProductGrid onAdd={() => setCartCount((c) => c + 1)} />
+      <ProductGrid onAdd={handleAddToCart} />
 
       {/* ══ COMPARISON SECTION ══════════════════════════ */}
       <section style={{ padding: "6rem 1.5rem" }} id="science">
