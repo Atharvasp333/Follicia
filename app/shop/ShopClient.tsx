@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ProductImage from "@/components/ProductImage";
 import { useCart } from "@/contexts/CartContext";
 
 /* ══════════════════════════════════════════════════════════════
@@ -49,6 +50,7 @@ export type Product = {
   tagline: string | null;
   price: number;
   priceDisplay: string | null;
+  imageUrl: string | null;
   category: string | null;
   hairType: string[];
   porosity: string[];
@@ -233,7 +235,7 @@ function ProductCard({
       name: product.name,
       price: product.price,
       priceDisplay: product.priceDisplay || `₹${product.price.toLocaleString("en-IN")}`,
-      imageUrl: null,
+      imageUrl: product.imageUrl,
       category: product.category,
     });
     
@@ -274,42 +276,57 @@ function ProductCard({
         style={{
           position: "relative",
           height: "200px",
-          background: product.bg,
+          background: product.imageUrl ? "#FFFFFF" : product.bg,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
+          overflow: "hidden",
         }}
       >
-        {/* Radial glow */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: `radial-gradient(ellipse at 60% 40%, ${product.accent}22 0%, transparent 70%)`,
-          }}
-        />
+        {product.imageUrl ? (
+          <ProductImage
+            src={product.imageUrl}
+            alt={product.name}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          <>
+            {/* Radial glow */}
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: `radial-gradient(ellipse at 60% 40%, ${product.accent}22 0%, transparent 70%)`,
+              }}
+            />
 
-        {/* Icon orb */}
-        <motion.div
-          whileHover={{ scale: 1.08, rotate: 5 }}
-          transition={{ duration: 0.3 }}
-          style={{
-            width: "80px",
-            height: "80px",
-            borderRadius: "50%",
-            background: `${product.accent}18`,
-            border: `2px solid ${product.accent}30`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          <Leaf size={34} color={product.accent} />
-        </motion.div>
+            {/* Icon orb */}
+            <motion.div
+              whileHover={{ scale: 1.08, rotate: 5 }}
+              transition={{ duration: 0.3 }}
+              style={{
+                width: "80px",
+                height: "80px",
+                borderRadius: "50%",
+                background: `${product.accent}18`,
+                border: `2px solid ${product.accent}30`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
+              <Leaf size={34} color={product.accent} />
+            </motion.div>
+          </>
+        )}
 
         {/* Badge */}
         {product.badge && (
@@ -491,7 +508,7 @@ function ProductModal({
       name: product.name,
       price: product.price,
       priceDisplay: product.priceDisplay || `₹${product.price.toLocaleString("en-IN")}`,
-      imageUrl: null,
+      imageUrl: product.imageUrl,
       category: product.category,
     });
     
@@ -571,7 +588,7 @@ function ProductModal({
             {/* Left: Visual */}
             <div
               style={{
-                background: product.bg,
+                background: product.imageUrl ? "#FFFFFF" : product.bg,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -580,62 +597,76 @@ function ProductModal({
                 overflow: "hidden",
               }}
             >
-              {/* Ambient glow */}
-              <div
-                aria-hidden
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: `radial-gradient(circle at 55% 45%, ${product.accent}2A 0%, transparent 65%)`,
-                }}
-              />
+              {product.imageUrl ? (
+                <ProductImage
+                  src={product.imageUrl}
+                  alt={product.name}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <>
+                  {/* Ambient glow */}
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: `radial-gradient(circle at 55% 45%, ${product.accent}2A 0%, transparent 65%)`,
+                    }}
+                  />
 
-              {/* Decorative rings */}
-              <div
-                aria-hidden
-                style={{
-                  position: "absolute",
-                  width: "240px",
-                  height: "240px",
-                  borderRadius: "50%",
-                  border: `1px solid ${product.accent}20`,
-                }}
-              />
-              <div
-                aria-hidden
-                style={{
-                  position: "absolute",
-                  width: "160px",
-                  height: "160px",
-                  borderRadius: "50%",
-                  border: `1px solid ${product.accent}30`,
-                }}
-              />
+                  {/* Decorative rings */}
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      width: "240px",
+                      height: "240px",
+                      borderRadius: "50%",
+                      border: `1px solid ${product.accent}20`,
+                    }}
+                  />
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      width: "160px",
+                      height: "160px",
+                      borderRadius: "50%",
+                      border: `1px solid ${product.accent}30`,
+                    }}
+                  />
 
-              {/* Central orb */}
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                style={{
-                  width: "110px",
-                  height: "110px",
-                  borderRadius: "50%",
-                  background: `${product.accent}20`,
-                  border: `2px solid ${product.accent}40`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  position: "relative",
-                  zIndex: 1,
-                  boxShadow: `0 16px 40px ${product.accent}25`,
-                }}
-              >
-                <Leaf size={48} color={product.accent} />
-              </motion.div>
+                  {/* Central orb */}
+                  <motion.div
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    style={{
+                      width: "110px",
+                      height: "110px",
+                      borderRadius: "50%",
+                      background: `${product.accent}20`,
+                      border: `2px solid ${product.accent}40`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      position: "relative",
+                      zIndex: 1,
+                      boxShadow: `0 16px 40px ${product.accent}25`,
+                    }}
+                  >
+                    <Leaf size={48} color={product.accent} />
+                  </motion.div>
+                </>
+              )}
 
               {/* Badge on image */}
               {product.badge && (
-                <div style={{ position: "absolute", bottom: "1.25rem", left: "1.25rem" }}>
+                <div style={{ position: "absolute", bottom: "1.25rem", left: "1.25rem", zIndex: 2 }}>
                   <span
                     style={{
                       display: "inline-flex",

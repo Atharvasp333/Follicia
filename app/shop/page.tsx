@@ -30,6 +30,7 @@ function mapDbProductToUI(dbProduct: any): Product {
     tagline: dbProduct.tagline || "Premium hair care",
     price: dbProduct.price,
     priceDisplay: dbProduct.priceDisplay || `₹${dbProduct.price.toLocaleString("en-IN")}`,
+    imageUrl: dbProduct.imageUrl,
     category: dbProduct.category || "Treatments",
     hairType: dbProduct.hairType || [],
     porosity: dbProduct.porosity || [],

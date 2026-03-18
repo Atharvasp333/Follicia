@@ -139,7 +139,21 @@ export default function NewProductPage() {
             </ProductFormSection>
 
             <ProductFormSection title="Media & Display">
-              <FormField label="Image URL" name="imageUrl" value={formData.imageUrl} onChange={handleChange} />
+              <FormField 
+                label="Image URL" 
+                name="imageUrl" 
+                value={formData.imageUrl} 
+                onChange={handleChange}
+                placeholder="/assets/Products/Product Name.jpeg"
+              />
+              <p style={{
+                fontFamily: "var(--font-inter), sans-serif",
+                fontSize: "0.75rem",
+                color: B.midGray,
+                marginTop: "-0.75rem",
+              }}>
+                Images should be placed in public/assets/Products/ folder
+              </p>
               <FormField label="Badge" name="badge" value={formData.badge} onChange={handleChange} />
             </ProductFormSection>
 

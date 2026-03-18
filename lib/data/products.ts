@@ -4,6 +4,8 @@
  * This file contains the seed data for products that will be inserted into the database.
  * Each product includes metadata for hairType, porosity, and scalpCondition to enable
  * intelligent filtering on the Shop All page.
+ * 
+ * Image paths point to /assets/Products/ which maps to public/assets/Products/
  */
 
 export const productsData = [
@@ -13,7 +15,7 @@ export const productsData = [
     description: "A bio-matched scalp concentrate with Zinc PCA, Niacinamide, and our proprietary SeboBalance™ complex. Clinical trials show a 67% reduction in sebum overproduction within 28 days.",
     price: 2490,
     priceDisplay: "₹2,490",
-    imageUrl: null,
+    imageUrl: "/assets/Products/Scalp Serum Concentrate.jpeg",
     category: "Scalp Care",
     hairType: ["oily", "normal"],
     porosity: ["low", "medium"],
@@ -31,7 +33,7 @@ export const productsData = [
     description: "A high-potency leave-in complex with Biotin, Redensyl®, and Peptide-8. Targets follicle anchoring and stimulates the anagen phase to visibly thicken strands.",
     price: 3290,
     priceDisplay: "₹3,290",
-    imageUrl: null,
+    imageUrl: "/assets/Products/Biotin Growth Complex.jpeg",
     category: "Treatments",
     hairType: ["all", "fine", "normal"],
     porosity: ["low", "medium", "high"],
@@ -49,7 +51,7 @@ export const productsData = [
     description: "A weekly bio-enzyme mask with Papain, Hyaluronic Acid (3 molecular weights), and Mongongo Oil. Reconstructs the cuticle layer to lock in moisture for 72 hours.",
     price: 1890,
     priceDisplay: "₹1,890",
-    imageUrl: null,
+    imageUrl: "/assets/Products/Hydrating Enzyme Mask.jpeg",
     category: "Conditioning",
     hairType: ["dry", "coily", "curly"],
     porosity: ["high", "medium"],
@@ -67,7 +69,7 @@ export const productsData = [
     description: "Micro-crystalline exfoliants paired with Salicylic Acid and Willow Bark Extract dissolve product buildup and dead skin. A pre-shampoo ritual that primes follicles for treatment uptake.",
     price: 1690,
     priceDisplay: "₹1,690",
-    imageUrl: null,
+    imageUrl: "/assets/Products/Clarifying Scalp Scrub.jpeg",
     category: "Scalp Care",
     hairType: ["oily", "normal", "fine"],
     porosity: ["low"],
@@ -85,7 +87,7 @@ export const productsData = [
     description: "Keratin amino acid chains and Bond-Rebuilder technology restore intra-cortical bonds severed by chemical processing or heat damage. Measurable strength increase in 7 days.",
     price: 2890,
     priceDisplay: "₹2,890",
-    imageUrl: null,
+    imageUrl: "/assets/Products/Protein Repair Bond Serum.jpeg",
     category: "Treatments",
     hairType: ["damaged", "dry", "coily"],
     porosity: ["high"],
@@ -103,7 +105,7 @@ export const productsData = [
     description: "A leave-on conditioner with Plant Ceramides, Panthenol, and our HydroSeal™ barrier technology. Clinically proven to reduce moisture loss by 58% over 24 hours.",
     price: 1490,
     priceDisplay: "₹1,490",
-    imageUrl: null,
+    imageUrl: "/assets/Products/Moisture Lock Conditioner.jpeg",
     category: "Conditioning",
     hairType: ["dry", "normal", "curly", "coily"],
     porosity: ["medium", "high"],
@@ -121,7 +123,7 @@ export const productsData = [
     description: "A featherweight blend of Argan, Marula, and Inca Inchi oils fortified with Vitamin E and UV-filter actives. Seals the cuticle without weighing down fine hair.",
     price: 2190,
     priceDisplay: "₹2,190",
-    imageUrl: null,
+    imageUrl: "/assets/Products/Antioxidant Defence Oil.jpeg",
     category: "Treatments",
     hairType: ["all", "fine", "normal"],
     porosity: ["low", "medium"],
@@ -139,7 +141,7 @@ export const productsData = [
     description: "A micro-lather, sulphate-free shampoo with Biotin, Caffeine Microspheres, and Panthenol. Cleanses thoroughly without stripping the scalp's natural lipid barrier.",
     price: 1290,
     priceDisplay: "₹1,290",
-    imageUrl: null,
+    imageUrl: "/assets/Products/Volume Boost Shampoo.jpeg",
     category: "Cleansing",
     hairType: ["fine", "normal", "oily"],
     porosity: ["low", "medium"],
@@ -157,7 +159,7 @@ export const productsData = [
     description: "A pH-balanced cleansing formula with Rosemary Extract and Peppermint Oil that invigorates the scalp while maintaining natural moisture balance. Perfect for daily use.",
     price: 1390,
     priceDisplay: "₹1,390",
-    imageUrl: null,
+    imageUrl: "/assets/Products/Awakening Wash.jpeg",
     category: "Cleansing",
     hairType: ["all", "normal", "dry"],
     porosity: ["medium", "high"],
@@ -175,7 +177,7 @@ export const productsData = [
     description: "An intensive weekly treatment infused with Hydrolyzed Silk Protein and Quinoa Extract. Penetrates deep into the cortex to repair damage and restore elasticity.",
     price: 2690,
     priceDisplay: "₹2,690",
-    imageUrl: null,
+    imageUrl: "/assets/Products/Silk Protein Mask.jpeg",
     category: "Conditioning",
     hairType: ["damaged", "dry", "curly"],
     porosity: ["high", "medium"],
