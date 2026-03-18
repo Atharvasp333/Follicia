@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       shippingCity: shippingAddress?.city ? String(shippingAddress.city) : null,
       shippingState: shippingAddress?.state ? String(shippingAddress.state) : null,
       shippingPincode: shippingAddress?.pincode ? String(shippingAddress.pincode) : null,
-      status: "PENDING", // Start as PENDING until payment is confirmed
+      status: "PENDING" as const, // Start as PENDING until payment is confirmed
       items: {
         create: items.map((item: any) => ({
           productId: String(item.productId),

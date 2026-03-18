@@ -51,7 +51,8 @@ export interface Order {
     user: User;
     status: OrderStatus;
     totalAmount: number;
-    stripePaymentIntentId?: string | null;
+    razorpayOrderId?: string | null;
+    razorpayPaymentId?: string | null;
     items: OrderItem[];
     createdAt: Date;
     updatedAt: Date;

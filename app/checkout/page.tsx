@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CreditCard,
@@ -23,6 +24,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
+
+// Razorpay types
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 const E = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
@@ -49,10 +57,6 @@ interface CheckoutFormData {
   city: string;
   state: string;
   pincode: string;
-  cardNumber: string;
-  cardName: string;
-  expiryDate: string;
-  cvv: string;
 }
 
 /* ── Success Modal ──────────────────────────────────────── */
@@ -471,14 +475,12 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      // Simulate payment processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
       // Calculate final total
       const shippingCost = shippingMethod === "express" ? 299 : subtotal >= 2999 ? 0 : 199;
       const total = subtotal + shippingCost;
 
-      // Save order to database
+      // Step 1: Create order in our database
+      console.log("📦 Creating order in database...");
       const orderResponse = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -511,17 +513,87 @@ export default function CheckoutPage() {
       }
 
       const orderData = await orderResponse.json();
-      console.log("✅ Order created successfully:", orderData);
+      const orderId = orderData.order.id;
+      console.log("✅ Order created successfully:", orderId);
 
-      // Clear cart
-      await clearCart();
+      // Step 2: Create Razorpay order
+      console.log("💳 Creating Razorpay order...");
+      const razorpayOrderResponse = await fetch("/api/razorpay/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: total,
+          orderId: orderId,
+        }),
+      });
 
-      // Show success modal
-      setShowSuccess(true);
+      if (!razorpayOrderResponse.ok) {
+        throw new Error("Failed to create Razorpay order");
+      }
+
+      const razorpayOrderData = await razorpayOrderResponse.json();
+      console.log("✅ Razorpay order created:", razorpayOrderData.id);
+
+      // Step 3: Open Razorpay checkout modal
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: razorpayOrderData.amount,
+        currency: razorpayOrderData.currency,
+        name: "Follicia",
+        description: "Finalizing your Follicia Ritual.",
+        order_id: razorpayOrderData.id,
+        prefill: {
+          name: data.fullName,
+          email: data.email,
+          contact: data.phone,
+        },
+        theme: {
+          color: "#0D3B44", // Brand teal
+        },
+        handler: async function (response: any) {
+          console.log("💰 Payment successful, verifying...");
+          
+          // Step 4: Verify payment
+          const verifyResponse = await fetch("/api/razorpay/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              orderId: orderId,
+            }),
+          });
+
+          if (verifyResponse.ok) {
+            console.log("✅ Payment verified successfully");
+            
+            // Clear cart
+            await clearCart();
+            
+            // Show success modal
+            setShowSuccess(true);
+          } else {
+            console.error("❌ Payment verification failed");
+            alert("Payment verification failed. Please contact support.");
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            console.log("Payment modal closed");
+            setIsProcessing(false);
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+      
+      // Reset processing state after opening modal
+      setIsProcessing(false);
     } catch (error) {
       console.error("Payment failed:", error);
-      alert("Payment failed. Please try again.");
-    } finally {
+      alert(error instanceof Error ? error.message : "Payment failed. Please try again.");
       setIsProcessing(false);
     }
   };
@@ -541,6 +613,10 @@ export default function CheckoutPage() {
 
   return (
     <>
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="lazyOnload"
+      />
       <Navbar isFixed />
       <SuccessModal isOpen={showSuccess} onClose={handleSuccessClose} />
 
@@ -869,7 +945,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Step 2: Payment */}
+                {/* Step 2: Review & Pay */}
                 <div
                   style={{
                     background: "#FFFFFF",
@@ -905,152 +981,42 @@ export default function CheckoutPage() {
                         color: B.teal,
                       }}
                     >
-                      Secure Payment
+                      Review & Pay
                     </h2>
                     <Lock size={18} color={B.midGray} style={{ marginLeft: "auto" }} />
                   </div>
 
-                  <div style={{ display: "grid", gap: "1.25rem" }}>
-                    {/* Card Number */}
-                    <div>
-                      <label
+                  <div
+                    style={{
+                      padding: "1.5rem",
+                      borderRadius: "1rem",
+                      background: "rgba(42,157,143,0.05)",
+                      border: `1px solid rgba(42,157,143,0.2)`,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+                      <Shield size={20} color={B.seafoam} />
+                      <p
                         style={{
-                          display: "block",
-                          fontFamily: "var(--font-inter), sans-serif",
-                          fontSize: "0.85rem",
+                          fontFamily: "var(--font-montserrat), sans-serif",
+                          fontSize: "0.9rem",
                           fontWeight: 600,
                           color: B.teal,
-                          marginBottom: "0.5rem",
                         }}
                       >
-                        <CreditCard size={14} style={{ display: "inline", marginRight: "0.5rem" }} />
-                        Card Number
-                      </label>
-                      <input
-                        type="text"
-                        {...register("cardNumber", { required: "Card number is required" })}
-                        placeholder="1234 5678 9012 3456"
-                        maxLength={19}
-                        style={{
-                          width: "100%",
-                          padding: "0.875rem 1rem",
-                          borderRadius: "1.25rem",
-                          border: `2px solid ${errors.cardNumber ? "#ef4444" : B.borderGray}`,
-                          fontFamily: "var(--font-inter), sans-serif",
-                          fontSize: "0.9rem",
-                          outline: "none",
-                        }}
-                        onFocus={(e) => (e.currentTarget.style.borderColor = B.seafoam)}
-                        onBlur={(e) => (e.currentTarget.style.borderColor = errors.cardNumber ? "#ef4444" : B.borderGray)}
-                      />
-                      {errors.cardNumber && (
-                        <span style={{ fontSize: "0.75rem", color: "#ef4444", marginTop: "0.25rem", display: "block" }}>
-                          {errors.cardNumber.message}
-                        </span>
-                      )}
+                        Secure Payment via Razorpay
+                      </p>
                     </div>
-
-                    {/* Card Name */}
-                    <div>
-                      <label
-                        style={{
-                          display: "block",
-                          fontFamily: "var(--font-inter), sans-serif",
-                          fontSize: "0.85rem",
-                          fontWeight: 600,
-                          color: B.teal,
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        Name on Card
-                      </label>
-                      <input
-                        type="text"
-                        {...register("cardName", { required: "Name on card is required" })}
-                        style={{
-                          width: "100%",
-                          padding: "0.875rem 1rem",
-                          borderRadius: "1.25rem",
-                          border: `2px solid ${errors.cardName ? "#ef4444" : B.borderGray}`,
-                          fontFamily: "var(--font-inter), sans-serif",
-                          fontSize: "0.9rem",
-                          outline: "none",
-                        }}
-                        onFocus={(e) => (e.currentTarget.style.borderColor = B.seafoam)}
-                        onBlur={(e) => (e.currentTarget.style.borderColor = errors.cardName ? "#ef4444" : B.borderGray)}
-                      />
-                      {errors.cardName && (
-                        <span style={{ fontSize: "0.75rem", color: "#ef4444", marginTop: "0.25rem", display: "block" }}>
-                          {errors.cardName.message}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Expiry & CVV */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                      <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontFamily: "var(--font-inter), sans-serif",
-                            fontSize: "0.85rem",
-                            fontWeight: 600,
-                            color: B.teal,
-                            marginBottom: "0.5rem",
-                          }}
-                        >
-                          Expiry Date
-                        </label>
-                        <input
-                          type="text"
-                          {...register("expiryDate", { required: "Expiry date is required" })}
-                          placeholder="MM/YY"
-                          maxLength={5}
-                          style={{
-                            width: "100%",
-                            padding: "0.875rem 1rem",
-                            borderRadius: "1.25rem",
-                            border: `2px solid ${errors.expiryDate ? "#ef4444" : B.borderGray}`,
-                            fontFamily: "var(--font-inter), sans-serif",
-                            fontSize: "0.9rem",
-                            outline: "none",
-                          }}
-                          onFocus={(e) => (e.currentTarget.style.borderColor = B.seafoam)}
-                          onBlur={(e) => (e.currentTarget.style.borderColor = errors.expiryDate ? "#ef4444" : B.borderGray)}
-                        />
-                      </div>
-                      <div>
-                        <label
-                          style={{
-                            display: "block",
-                            fontFamily: "var(--font-inter), sans-serif",
-                            fontSize: "0.85rem",
-                            fontWeight: 600,
-                            color: B.teal,
-                            marginBottom: "0.5rem",
-                          }}
-                        >
-                          CVV
-                        </label>
-                        <input
-                          type="text"
-                          {...register("cvv", { required: "CVV is required" })}
-                          placeholder="123"
-                          maxLength={3}
-                          style={{
-                            width: "100%",
-                            padding: "0.875rem 1rem",
-                            borderRadius: "1.25rem",
-                            border: `2px solid ${errors.cvv ? "#ef4444" : B.borderGray}`,
-                            fontFamily: "var(--font-inter), sans-serif",
-                            fontSize: "0.9rem",
-                            outline: "none",
-                          }}
-                          onFocus={(e) => (e.currentTarget.style.borderColor = B.seafoam)}
-                          onBlur={(e) => (e.currentTarget.style.borderColor = errors.cvv ? "#ef4444" : B.borderGray)}
-                        />
-                      </div>
-                    </div>
+                    <p
+                      style={{
+                        fontFamily: "var(--font-inter), sans-serif",
+                        fontSize: "0.85rem",
+                        color: B.bodyText,
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      Your payment will be processed securely through Razorpay. You can pay using Credit/Debit Cards, UPI, Net Banking, and Wallets.
+                    </p>
                   </div>
                 </div>
 
@@ -1097,7 +1063,7 @@ export default function CheckoutPage() {
                   ) : (
                     <>
                       <Lock size={18} />
-                      Complete Purchase
+                      Proceed to Payment
                       <ArrowRight size={18} />
                     </>
                   )}

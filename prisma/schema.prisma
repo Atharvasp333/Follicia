@@ -82,7 +82,6 @@ model Order {
   shippingCity          String?
   shippingState         String?
   shippingPincode       String?
-  stripePaymentIntentId String?
   // Razorpay payment tracking
   razorpayOrderId       String?
   razorpayPaymentId     String?

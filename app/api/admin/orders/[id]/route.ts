@@ -3,11 +3,13 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+  
   try {
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
           select: {
@@ -49,8 +51,10 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+  
   try {
     const body = await req.json();
     const { status } = body;
@@ -63,7 +67,7 @@ export async function PATCH(
     }
 
     const order = await prisma.order.update({
-      where: { id: params.id },
+      where: { id },
       data: { status },
     });
 
