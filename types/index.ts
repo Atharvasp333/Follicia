@@ -10,8 +10,33 @@ export interface User {
     email: string;
     name?: string | null;
     imageUrl?: string | null;
+    hairType?: string | null;
+    porosity?: string | null;
+    scalpCondition?: string | null;
+    porosityScore?: number | null;
+    scalpHealth?: number | null;
+    primaryConcern?: string | null;
+    hairAnalysis?: string | null;
+    targetTags?: string[];
     createdAt: Date;
     updatedAt: Date;
+}
+
+// ─── Hair Analysis ────────────────────────────────────────
+export interface HairAnalysisInput {
+    texture: number;
+    porosityChecks: string[];
+    scalp: string;
+    chemicalHistory: string[];
+    clinicalNotes: string;
+}
+
+export interface HairAnalysisResult {
+    porosityScore: number;
+    scalpHealth: number;
+    primaryConcern: string;
+    analysis: string;
+    targetTags: string[];
 }
 
 // ─── Product ──────────────────────────────────────────────

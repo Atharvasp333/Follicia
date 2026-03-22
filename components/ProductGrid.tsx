@@ -1,87 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Sparkles,
   ShoppingCart,
   Star,
-  Leaf,
   CheckCircle,
   ArrowRight,
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import ProductImage from "@/components/ProductImage";
+import axios from "axios";
 
-/* ── Data ────────────────────────────────────────────────────────────── */
-const products = [
-  {
-    id: "p1",
-    name: "BioBalance Scalp Serum",
-    subtitle: "Oily Scalp Formula",
-    price: "₹2,490",
-    match: 94,
-    badge: "AI Pick",
-    rating: 4.9,
-    reviews: 312,
-    accent: "#2A9D8F",
-    bg: "rgba(42,157,143,0.06)",
-    description: "Microbiome-restoring serum with Niacinamide & Zinc PCA.",
-  },
-  {
-    id: "p2",
-    name: "RootRevive Treatment",
-    subtitle: "Thinning Hair Formula",
-    price: "₹3,290",
-    match: 88,
-    badge: "Best Seller",
-    rating: 4.8,
-    reviews: 541,
-    accent: "#8B6914",
-    bg: "rgba(184,134,11,0.06)",
-    description: "Clinically-dosed Redensyl & Procapil for follicle reactivation.",
-  },
-  {
-    id: "p3",
-    name: "HydraLux Mask",
-    subtitle: "Dry & Brittle Hair",
-    price: "₹1,890",
-    match: 91,
-    badge: "AI Pick",
-    rating: 4.7,
-    reviews: 208,
-    accent: "#2A9D8F",
-    bg: "rgba(42,157,143,0.06)",
-    description: "Deep-penetrating ceramide mask with Argan & Baobab oil.",
-  },
-  {
-    id: "p4",
-    name: "DermaClear Tonic",
-    subtitle: "Dandruff Control",
-    price: "₹1,690",
-    match: 85,
-    badge: null,
-    rating: 4.6,
-    reviews: 178,
-    accent: "#5C8A7A",
-    bg: "rgba(92,138,122,0.06)",
-    description: "Salicylic acid + Tea Tree for a flake-free scalp.",
-  },
-  {
-    id: "p5",
-    name: "ProGrowth Peptide Ampoule",
-    subtitle: "Growth Stimulation",
-    price: "₹4,190",
-    match: 96,
-    badge: "Clinical Select",
-    rating: 5.0,
-    reviews: 89,
-    accent: "#B8860B",
-    bg: "rgba(184,134,11,0.07)",
-    description: "10 bioactive peptides that signal follicle reactivation.",
-  },
-];
+/* ── Types ────────────────────────────────────────────────────────────── */
+type Product = {
+  id: string;
+  name: string;
+  tagline: string | null;
+  price: number;
+  priceDisplay: string | null;
+  imageUrl: string | null;
+  category: string | null;
+  badge: string | null;
+  rating: number;
+  reviews: number;
+  description: string | null;
+  accent: string;
+  bg: string;
+};
 
-const categories = ["All", "Scalp Care", "Growth", "Hydration", "Cleanse"];
+const categories = ["All", "Scalp Care", "Treatments", "Conditioning", "Cleansing"];
 
 const E = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
@@ -101,7 +50,7 @@ function ProductCard({
   i,
   onAdd,
 }: {
-  p: (typeof products)[0];
+  p: Product;
   i: number;
   onAdd: () => void;
 }) {
@@ -111,16 +60,13 @@ function ProductCard({
   const handleAddToCart = async () => {
     console.log("🔘 Add to Cart button clicked for:", p.name);
     
-    // Extract price number from string like "₹2,490"
-    const priceNumber = parseFloat(p.price.replace(/[₹,]/g, ""));
-    
     await addToCart({
       productId: p.id,
       name: p.name,
-      price: priceNumber,
-      priceDisplay: p.price,
-      imageUrl: null,
-      category: "Product", // You can map this from subtitle or add category to products array
+      price: p.price,
+      priceDisplay: p.priceDisplay || `₹${p.price.toLocaleString("en-IN")}`,
+      imageUrl: p.imageUrl,
+      category: p.category,
     });
     
     setAdded(true);
@@ -149,46 +95,58 @@ function ProductCard({
       }}
       aria-label={`Product: ${p.name}`}
     >
-      {/* Image / colour swatch area */}
+      {/* Image area */}
       <div
         style={{
           position: "relative",
           height: "188px",
-          background: p.bg,
+          background: p.imageUrl ? "#FFFFFF" : p.bg,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
+          overflow: "hidden",
         }}
       >
-        {/* Decorative orb */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: `radial-gradient(ellipse at 60% 40%, ${p.accent}18 0%, transparent 65%)`,
-          }}
-        />
-        {/* Product icon placeholder */}
-        <motion.div
-          whileHover={{ scale: 1.1, rotate: 4 }}
-          transition={{ duration: 0.3 }}
-          style={{
-            width: "76px",
-            height: "76px",
-            borderRadius: "50%",
-            background: `${p.accent}1A`,
-            border: `2px solid ${p.accent}30`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          <Leaf size={34} color={p.accent} />
-        </motion.div>
+        {p.imageUrl ? (
+          <ProductImage
+            src={p.imageUrl}
+            alt={p.name}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          <>
+            {/* Decorative orb - fallback when no image */}
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: `radial-gradient(ellipse at 60% 40%, ${p.accent}18 0%, transparent 65%)`,
+              }}
+            />
+            <div
+              style={{
+                width: "76px",
+                height: "76px",
+                borderRadius: "50%",
+                background: `${p.accent}1A`,
+                border: `2px solid ${p.accent}30`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
+              <Sparkles size={34} color={p.accent} />
+            </div>
+          </>
+        )}
 
         {/* Badges */}
         <div
@@ -210,14 +168,14 @@ function ProductCard({
                 padding: "3px 10px",
                 borderRadius: "9999px",
                 background:
-                  p.badge === "Best Seller"
+                  p.badge === "Bestseller"
                     ? "linear-gradient(135deg,#D4AF37,#E8CC6A)"
                     : "rgba(42,157,143,0.12)",
                 border:
-                  p.badge === "Best Seller"
+                  p.badge === "Bestseller"
                     ? "none"
                     : "1px solid rgba(42,157,143,0.3)",
-                color: p.badge === "Best Seller" ? "#0D3B44" : "#2A9D8F",
+                color: p.badge === "Bestseller" ? "#0D3B44" : "#2A9D8F",
                 fontFamily: "'Montserrat', sans-serif",
                 fontSize: "0.6rem",
                 fontWeight: 700,
@@ -225,13 +183,13 @@ function ProductCard({
                 textTransform: "uppercase",
               }}
             >
-              {p.badge !== "Best Seller" && <Sparkles size={8} />}
+              {p.badge !== "Bestseller" && <Sparkles size={8} />}
               {p.badge}
             </span>
           )}
         </div>
 
-        {/* Match badge */}
+        {/* Category tag */}
         <div
           style={{
             position: "absolute",
@@ -246,7 +204,8 @@ function ProductCard({
               gap: "4px",
               padding: "3px 9px",
               borderRadius: "9999px",
-              background: "rgba(212,175,55,0.1)",
+              background: "rgba(255,255,255,0.85)",
+              backdropFilter: "blur(4px)",
               border: "1px solid rgba(212,175,55,0.35)",
               color: "#B8860B",
               fontFamily: "'Montserrat', sans-serif",
@@ -254,7 +213,7 @@ function ProductCard({
               fontWeight: 700,
             }}
           >
-            {p.match}% Match
+            {p.category}
           </span>
         </div>
       </div>
@@ -272,7 +231,7 @@ function ProductCard({
             marginBottom: "3px",
           }}
         >
-          {p.subtitle}
+          {p.tagline || "Premium Formula"}
         </p>
         <h3
           style={{
@@ -339,7 +298,7 @@ function ProductCard({
               color: "#0D3B44",
             }}
           >
-            {p.price}
+            {p.priceDisplay || `₹${p.price.toLocaleString("en-IN")}`}
           </span>
           <motion.button
             whileHover={{ scale: 1.06 }}
@@ -385,6 +344,72 @@ export default function ProductGrid({
   onAdd: () => void;
 }) {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch products from database
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("/api/admin/products");
+        const dbProducts = response.data.products || []; // API returns { success, products }
+        
+        // Map DB products to UI format with colors
+        const categoryColors: Record<string, { accent: string; bg: string }> = {
+          "Scalp Care": { accent: "#2A9D8F", bg: "rgba(42,157,143,0.06)" },
+          "Treatments": { accent: "#D4AF37", bg: "rgba(212,175,55,0.06)" },
+          "Conditioning": { accent: "#4DBCB0", bg: "rgba(77,188,176,0.06)" },
+          "Cleansing": { accent: "#0D3B44", bg: "rgba(13,59,68,0.05)" },
+        };
+
+        const mappedProducts: Product[] = dbProducts.slice(0, 5).map((p: any) => {
+          const colors = categoryColors[p.category || "Treatments"] || {
+            accent: "#2A9D8F",
+            bg: "rgba(42,157,143,0.06)",
+          };
+          
+          return {
+            id: p.id,
+            name: p.name,
+            tagline: p.tagline,
+            price: p.price,
+            priceDisplay: p.priceDisplay,
+            imageUrl: p.imageUrl,
+            category: p.category,
+            badge: p.badge,
+            rating: p.rating || 0,
+            reviews: p.reviews || 0,
+            description: p.description,
+            accent: colors.accent,
+            bg: colors.bg,
+          };
+        });
+
+        setProducts(mappedProducts);
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <section
+        id="products"
+        style={{ padding: "5.5rem 1.5rem", background: "#FAFCFB" }}
+      >
+        <div style={{ maxWidth: "1280px", margin: "0 auto", textAlign: "center" }}>
+          <p style={{ color: "#9AABA5", fontFamily: "'Inter', sans-serif" }}>
+            Loading products...
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section

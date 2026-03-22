@@ -20,6 +20,12 @@ model User {
   hairType       String?  // e.g. "straight", "wavy", "curly", "coily"
   porosity       String?  // e.g. "low", "medium", "high"
   scalpCondition String?  // e.g. "oily", "dry", "normal", "sensitive"
+  // AI Hair DNA Analysis fields
+  porosityScore  Int?     // 1-100: AI-calculated porosity metric
+  scalpHealth    Int?     // 1-100: AI-calculated scalp health metric
+  primaryConcern String?  // AI-identified main hair concern
+  hairAnalysis   String?  // AI-generated clinical summary
+  targetTags     String[] // AI-recommended product tags
   // Firebase authentication UID
   firebaseUid    String?  @unique
   imageUrl       String?

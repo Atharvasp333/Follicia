@@ -329,18 +329,20 @@ function Sidebar({
               )}
 
               {/* Take quiz */}
-              <button
-                className="btn-teal"
-                style={{
-                  width: "100%",
-                  justifyContent: "center",
-                  fontSize: "0.88rem",
-                  background: "#2A9D8F",
-                }}
-              >
-                <Sparkles size={14} />
-                Take the Hair Quiz
-              </button>
+              <Link href="/quiz" onClick={onClose} style={{ textDecoration: 'none' }}>
+                <button
+                  className="btn-teal"
+                  style={{
+                    width: "100%",
+                    justifyContent: "center",
+                    fontSize: "0.88rem",
+                    background: "#2A9D8F",
+                  }}
+                >
+                  <Sparkles size={14} />
+                  Take the Hair Quiz
+                </button>
+              </Link>
             </div>
           </motion.aside>
         </>

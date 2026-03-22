@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import Link from "next/link";
 import {
   ArrowRight,
   Sparkles,
@@ -456,16 +457,18 @@ export default function HomePage() {
           </div>
 
           <div style={{ textAlign: "center" }}>
-            <motion.button
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.97 }}
-              className="btn-gold"
-              style={{ fontSize: "1rem", padding: "1rem 2.5rem" }}
-            >
-              <Sparkles size={18} />
-              Start My 90-Second Assessment
-              <ArrowRight size={18} />
-            </motion.button>
+            <Link href="/quiz">
+              <motion.button
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                className="btn-gold"
+                style={{ fontSize: "1rem", padding: "1rem 2.5rem" }}
+              >
+                <Sparkles size={18} />
+                Start My 90-Second Assessment
+                <ArrowRight size={18} />
+              </motion.button>
+            </Link>
           </div>
         </div>
         <style>{`
@@ -550,36 +553,40 @@ export default function HomePage() {
                 justifyContent: "center",
               }}
             >
-              <motion.button
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                className="btn-gold"
-                style={{ fontSize: "1rem", padding: "1rem 2.25rem" }}
-              >
-                Start My Regimen
-                <ArrowRight size={18} />
-              </motion.button>
-              <motion.button
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "1rem 2.25rem",
-                  borderRadius: "9999px",
-                  border: "1.5px solid rgba(244,247,245,0.35)",
-                  background: "rgba(255,255,255,0.08)",
-                  color: "#F4F7F5",
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontWeight: 600,
-                  fontSize: "1rem",
-                  cursor: "pointer",
-                  transition: "background 0.3s ease",
-                }}
-              >
-                Explore Products
-              </motion.button>
+              <Link href="/quiz">
+                <motion.button
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="btn-gold"
+                  style={{ fontSize: "1rem", padding: "1rem 2.25rem" }}
+                >
+                  Start My Regimen
+                  <ArrowRight size={18} />
+                </motion.button>
+              </Link>
+              <Link href="/shop">
+                <motion.button
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "1rem 2.25rem",
+                    borderRadius: "9999px",
+                    border: "1.5px solid rgba(244,247,245,0.35)",
+                    background: "rgba(255,255,255,0.08)",
+                    color: "#F4F7F5",
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: 600,
+                    fontSize: "1rem",
+                    cursor: "pointer",
+                    transition: "background 0.3s ease",
+                  }}
+                >
+                  Explore Products
+                </motion.button>
+              </Link>
             </div>
           </div>
         </motion.div>

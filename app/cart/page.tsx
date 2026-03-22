@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ProductImage from "@/components/ProductImage";
 import { useCart } from "@/contexts/CartContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 
@@ -56,10 +57,27 @@ function CartItemRow({
     >
       {/* Thumbnail */}
       <div
-        className="w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ background: `${color}12`, border: `1px solid ${color}20` }}
+        className="w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+        style={{ 
+          background: item.imageUrl ? "#FFFFFF" : `${color}12`, 
+          border: `1px solid ${color}20` 
+        }}
       >
-        <Leaf size={28} color={color} />
+        {item.imageUrl ? (
+          <ProductImage
+            src={item.imageUrl}
+            alt={item.name}
+            width={80}
+            height={80}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          <Leaf size={28} color={color} />
+        )}
       </div>
 
       {/* Details */}
