@@ -33,6 +33,8 @@ export async function POST(req: NextRequest) {
         imageUrl: body.imageUrl,
         category: body.category,
         stock: body.stock,
+        inventoryCount: body.inventoryCount || 0,
+        lowStockThreshold: body.lowStockThreshold || 5,
         badge: body.badge,
         aiMatchTag: body.aiMatchTag,
         ingredients: body.ingredients || [],

@@ -42,6 +42,9 @@ function mapDbProductToUI(dbProduct: any): Product {
     reviews: dbProduct.reviews || 0,
     description: dbProduct.description || "",
     howToUse: "Apply as directed. Consult product packaging for detailed instructions.",
+    stock: dbProduct.stock || 0,
+    inventoryCount: dbProduct.inventoryCount || 0,
+    lowStockThreshold: dbProduct.lowStockThreshold || 5,
   };
 }
 

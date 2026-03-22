@@ -10,6 +10,14 @@ export async function PATCH(
   try {
     const body = await req.json();
 
+    // Keep stock and inventoryCount in sync
+    if (body.inventoryCount !== undefined && body.stock === undefined) {
+      body.stock = body.inventoryCount;
+    }
+    if (body.stock !== undefined && body.inventoryCount === undefined) {
+      body.inventoryCount = body.stock;
+    }
+
     const product = await prisma.product.update({
       where: { id },
       data: body,

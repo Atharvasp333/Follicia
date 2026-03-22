@@ -444,7 +444,7 @@ function OrderSummary({
 /* ── Main Checkout Page ──────────────────────────────────── */
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartItems, clearCart, subtotal } = useCart();
+  const { cartItems, clearCart, subtotal, validateStock } = useCart();
   const { currentUser, dbUser } = useAuthModal();
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>("standard");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -475,6 +475,19 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
+      // Validate stock before proceeding
+      console.log("🔍 Validating stock availability...");
+      const stockValidation = await validateStock();
+      
+      if (!stockValidation.valid) {
+        alert(`The following items are out of stock or have insufficient quantity:\n\n${stockValidation.outOfStock.join('\n')}\n\nPlease update your cart and try again.`);
+        setIsProcessing(false);
+        router.push('/cart');
+        return;
+      }
+      
+      console.log("✅ Stock validation passed");
+
       // Calculate final total
       const shippingCost = shippingMethod === "express" ? 299 : subtotal >= 2999 ? 0 : 199;
       const total = subtotal + shippingCost;

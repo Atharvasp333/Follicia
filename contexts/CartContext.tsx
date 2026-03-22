@@ -20,6 +20,7 @@ interface CartContextType {
   removeFromCart: (productId: string) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
+  validateStock: () => Promise<{ valid: boolean; outOfStock: string[] }>;
   cartCount: number;
   subtotal: number;
   isLoading: boolean;
@@ -161,6 +162,49 @@ export function CartProvider({ children }: { children: ReactNode }) {
     console.log("➕ Adding to cart:", item);
     const quantity = item.quantity || 1;
     
+    // Check stock availability before adding
+    try {
+      const response = await axios.get('/api/admin/products');
+      const products = response.data.products;
+      const product = products.find((p: any) => p.id === item.productId);
+      
+      if (!product) {
+        console.error("❌ Product not found");
+        return;
+      }
+      
+      const availableStock = product.inventoryCount || 0;
+      
+      // Check current cart quantity for this product
+      const currentCartItem = cartItems.find((i) => i.productId === item.productId);
+      const currentQuantity = currentCartItem?.quantity || 0;
+      const totalQuantity = currentQuantity + quantity;
+      
+      if (availableStock === 0) {
+        console.error("❌ Product is out of stock");
+        // You can emit an event or use a toast notification here
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('cart-error', { 
+            detail: { message: `Sorry, ${item.name} is currently out of stock.` }
+          }));
+        }
+        return;
+      }
+      
+      if (totalQuantity > availableStock) {
+        console.error(`❌ Insufficient stock. Available: ${availableStock}, Requested: ${totalQuantity}`);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('cart-error', { 
+            detail: { message: `Sorry, only ${availableStock} units of ${item.name} are currently available in the lab.` }
+          }));
+        }
+        return;
+      }
+    } catch (error) {
+      console.error("❌ Failed to check stock", error);
+      // Continue anyway if stock check fails
+    }
+    
     setCartItems((prev) => {
       const existingIndex = prev.findIndex((i) => i.productId === item.productId);
       
@@ -223,6 +267,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const validateStock = async (): Promise<{ valid: boolean; outOfStock: string[] }> => {
+    console.log("🔍 Validating stock for cart items");
+    
+    try {
+      const response = await axios.get('/api/admin/products');
+      const products = response.data.products;
+      
+      const outOfStock: string[] = [];
+      
+      for (const cartItem of cartItems) {
+        const product = products.find((p: any) => p.id === cartItem.productId);
+        
+        if (!product || product.inventoryCount < cartItem.quantity) {
+          outOfStock.push(cartItem.name);
+          console.log(`⚠️ ${cartItem.name} is out of stock or insufficient quantity`);
+        }
+      }
+      
+      if (outOfStock.length > 0) {
+        console.log("❌ Stock validation failed:", outOfStock);
+        return { valid: false, outOfStock };
+      }
+      
+      console.log("✅ Stock validation passed");
+      return { valid: true, outOfStock: [] };
+    } catch (error) {
+      console.error("❌ Failed to validate stock", error);
+      return { valid: false, outOfStock: [] };
+    }
+  };
+
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -234,6 +309,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeFromCart,
         updateQuantity,
         clearCart,
+        validateStock,
         cartCount,
         subtotal,
         isLoading: isLoading || authLoading,

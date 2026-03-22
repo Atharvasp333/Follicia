@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -13,11 +13,14 @@ import {
   Sparkles,
   SlidersHorizontal,
   ShoppingCart,
+  AlertCircle,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductImage from "@/components/ProductImage";
+import Toast from "@/components/Toast";
 import { useCart } from "@/contexts/CartContext";
+import { useInventoryStore } from "@/store/useInventoryStore";
 
 /* ══════════════════════════════════════════════════════════════
    BRAND CONSTANTS — extracted 1:1 from globals.css / page.tsx
@@ -62,6 +65,9 @@ export type Product = {
   reviews: number;
   description: string | null;
   howToUse: string;
+  stock: number;
+  inventoryCount: number;
+  lowStockThreshold: number;
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -223,10 +229,21 @@ function ProductCard({
 }) {
   const [added, setAdded] = useState(false);
   const { addToCart } = useCart();
+  const { isAvailable, getProduct } = useInventoryStore();
+  
+  // Get real-time inventory data from store, fallback to product prop
+  const inventoryProduct = getProduct(product.id);
+  const currentStock = inventoryProduct?.inventoryCount ?? product.stock ?? product.inventoryCount ?? 0;
+  const inStock = currentStock > 0;
+  const lowStockThreshold = inventoryProduct?.lowStockThreshold ?? product.lowStockThreshold ?? 5;
+  const isLowStock = inStock && currentStock <= lowStockThreshold;
 
   const handleAdd = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("🔘 Add to Cart clicked for:", product.name);
+    
+    if (!inStock) return;
+    
+    console.log("🔘 Add to Cart clicked for:", product.name, "Stock:", currentStock);
     
     setAdded(true);
     
@@ -282,6 +299,8 @@ function ProductCard({
           justifyContent: "center",
           flexShrink: 0,
           overflow: "hidden",
+          filter: !inStock ? "grayscale(100%)" : "none",
+          opacity: !inStock ? 0.6 : 1,
         }}
       >
         {product.imageUrl ? (
@@ -453,8 +472,9 @@ function ProductCard({
             {product.priceDisplay}
           </span>
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={inStock ? { scale: 0.95 } : {}}
             onClick={handleAdd}
+            disabled={!inStock}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -462,22 +482,33 @@ function ProductCard({
               padding: "0.42rem 0.95rem",
               borderRadius: "9999px",
               border: "none",
-              cursor: "pointer",
+              cursor: inStock ? "pointer" : "not-allowed",
               fontFamily: "'Montserrat', sans-serif",
               fontWeight: 600,
               fontSize: "0.72rem",
-              background: added ? "rgba(42,157,143,0.1)" : B.teal,
-              color: added ? B.seafoam : B.cream,
+              background: !inStock ? "#E5E7EB" : added ? "rgba(42,157,143,0.1)" : B.teal,
+              color: !inStock ? "#9CA3AF" : added ? B.seafoam : B.cream,
               transition: "all 0.25s ease",
+              opacity: !inStock ? 0.7 : 1,
             }}
           >
-            {added ? (
+            {!inStock ? (
+              <><AlertCircle size={11} /> Out of Stock</>
+            ) : added ? (
               <><Check size={11} /> Added</>
             ) : (
               <><ShoppingCart size={11} /> Add</>
             )}
           </motion.button>
         </div>
+        
+        {/* Low stock warning */}
+        {isLowStock && (
+          <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "4px", fontSize: "0.68rem", color: "#F59E0B", fontFamily: "'Inter', sans-serif" }}>
+            <AlertCircle size={10} />
+            Only {currentStock} left in stock
+          </div>
+        )}
       </div>
     </motion.article>
   );
@@ -495,9 +526,17 @@ function ProductModal({
 }) {
   const [added, setAdded] = useState(false);
   const { addToCart } = useCart();
+  const { getProduct } = useInventoryStore();
+  
+  // Get real-time inventory data from store, fallback to product prop
+  const inventoryProduct = product ? getProduct(product.id) : null;
+  const currentStock = inventoryProduct?.inventoryCount ?? product?.stock ?? product?.inventoryCount ?? 0;
+  const inStock = currentStock > 0;
+  const lowStockThreshold = inventoryProduct?.lowStockThreshold ?? product?.lowStockThreshold ?? 5;
+  const isLowStock = inStock && currentStock <= lowStockThreshold;
 
   const handleAdd = async () => {
-    if (!product) return;
+    if (!product || !inStock) return;
     
     console.log("🔘 Add to Cart clicked (modal) for:", product.name);
     
@@ -892,15 +931,28 @@ function ProductModal({
               </div>
 
               {/* Add to Cart — matches Hero "Shop Now" button: E2F33E, zero radius, bold uppercase */}
+              {!inStock && (
+                <div style={{ marginBottom: "1rem", padding: "0.75rem", background: "rgba(239,68,68,0.1)", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px", color: "#DC2626", fontSize: "0.85rem", fontFamily: "'Inter', sans-serif" }}>
+                  <AlertCircle size={16} />
+                  <span>This product is currently out of stock</span>
+                </div>
+              )}
+              {isLowStock && (
+                <div style={{ marginBottom: "1rem", padding: "0.75rem", background: "rgba(245,158,11,0.1)", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px", color: "#D97706", fontSize: "0.85rem", fontFamily: "'Inter', sans-serif" }}>
+                  <AlertCircle size={16} />
+                  <span>Only {currentStock} left in stock - order soon!</span>
+                </div>
+              )}
               <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={inStock ? { scale: 1.03 } : {}}
+                whileTap={inStock ? { scale: 0.97 } : {}}
                 onClick={handleAdd}
+                disabled={!inStock}
                 style={{
                   width: "100%",
                   padding: "1rem 2rem",
-                  background: added ? `rgba(42,157,143,0.1)` : B.shopNow,
-                  color: added ? B.seafoam : "#0D0D0D",
+                  background: !inStock ? "#E5E7EB" : added ? `rgba(42,157,143,0.1)` : B.shopNow,
+                  color: !inStock ? "#9CA3AF" : added ? B.seafoam : "#0D0D0D",
                   border: "none",
                   borderRadius: "0",
                   fontFamily: "'Montserrat', sans-serif",
@@ -908,15 +960,18 @@ function ProductModal({
                   fontSize: "0.9rem",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase",
-                  cursor: "pointer",
+                  cursor: inStock ? "pointer" : "not-allowed",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "8px",
                   transition: "background 0.25s ease, color 0.25s ease",
+                  opacity: !inStock ? 0.7 : 1,
                 }}
               >
-                {added ? (
+                {!inStock ? (
+                  <><AlertCircle size={16} /> Out of Stock</>
+                ) : added ? (
                   <><Check size={16} /> Added to Cart</>
                 ) : (
                   <><ShoppingBag size={16} /> Add to Cart</>
@@ -949,6 +1004,25 @@ export default function ShopClient({ products }: { products: Product[] }) {
   });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string>("");
+  const [showToast, setShowToast] = useState(false);
+  const { syncWithDB } = useInventoryStore();
+
+  // Sync inventory on mount
+  useEffect(() => {
+    syncWithDB();
+  }, [syncWithDB]);
+
+  // Listen for cart errors
+  useEffect(() => {
+    const handleCartError = (event: CustomEvent) => {
+      setToastMessage(event.detail.message);
+      setShowToast(true);
+    };
+
+    window.addEventListener('cart-error' as any, handleCartError);
+    return () => window.removeEventListener('cart-error' as any, handleCartError);
+  }, []);
 
   const setFilter = useCallback(
     (key: keyof Filters) => (value: string) => {
@@ -988,6 +1062,14 @@ export default function ShopClient({ products }: { products: Product[] }) {
   return (
     <>
       <Navbar isFixed />
+
+      {/* Toast Notification */}
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        type="error"
+      />
 
       {/* Product Detail Modal */}
       <ProductModal

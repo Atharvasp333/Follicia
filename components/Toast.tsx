@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, X } from "lucide-react";
+import { CheckCircle, X, AlertCircle } from "lucide-react";
 import { useEffect } from "react";
 
 interface ToastProps {
@@ -9,9 +9,16 @@ interface ToastProps {
   isVisible: boolean;
   onClose: () => void;
   duration?: number;
+  type?: "success" | "error" | "warning";
 }
 
-export default function Toast({ message, isVisible, onClose, duration = 3000 }: ToastProps) {
+export default function Toast({ 
+  message, 
+  isVisible, 
+  onClose, 
+  duration = 3000,
+  type = "success" 
+}: ToastProps) {
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => {
@@ -20,6 +27,26 @@ export default function Toast({ message, isVisible, onClose, duration = 3000 }: 
       return () => clearTimeout(timer);
     }
   }, [isVisible, duration, onClose]);
+
+  const config = {
+    success: {
+      icon: CheckCircle,
+      color: "#2A9D8F",
+      bg: "rgba(42,157,143,0.1)",
+    },
+    error: {
+      icon: AlertCircle,
+      color: "#EF4444",
+      bg: "rgba(239,68,68,0.1)",
+    },
+    warning: {
+      icon: AlertCircle,
+      color: "#F59E0B",
+      bg: "rgba(245,158,11,0.1)",
+    },
+  };
+
+  const { icon: Icon, color, bg } = config[type];
 
   return (
     <AnimatePresence>
@@ -51,14 +78,14 @@ export default function Toast({ message, isVisible, onClose, duration = 3000 }: 
               width: "32px",
               height: "32px",
               borderRadius: "50%",
-              background: "rgba(42,157,143,0.1)",
+              background: bg,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
             }}
           >
-            <CheckCircle size={18} color="#2A9D8F" />
+            <Icon size={18} color={color} />
           </div>
           <p
             style={{

@@ -31,15 +31,40 @@ export async function POST(req: NextRequest) {
       console.log("✅ Payment signature verified successfully");
 
       // Update order status to PROCESSING and save payment ID
-      await prisma.order.update({
+      const order = await prisma.order.update({
         where: { id: orderId },
         data: {
           status: "PROCESSING",
           razorpayPaymentId: razorpay_payment_id,
         },
+        include: {
+          items: true,
+        },
       });
 
       console.log("✅ Order status updated to PROCESSING");
+
+      // Decrement inventory for each purchased item
+      try {
+        console.log("📦 Decrementing inventory for order items");
+        
+        for (const item of order.items) {
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              inventoryCount: {
+                decrement: item.quantity,
+              },
+            },
+          });
+          console.log(`✅ Decremented ${item.quantity} units from product ${item.productId}`);
+        }
+        
+        console.log("✅ Inventory updated successfully");
+      } catch (inventoryError) {
+        console.error("⚠️ Failed to update inventory (non-critical):", inventoryError);
+        // Continue with payment verification even if inventory update fails
+      }
 
       // Automatically generate invoice after successful payment
       try {
