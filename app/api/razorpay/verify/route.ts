@@ -41,6 +41,31 @@ export async function POST(req: NextRequest) {
 
       console.log("✅ Order status updated to PROCESSING");
 
+      // Automatically generate invoice after successful payment
+      try {
+        console.log("📄 Triggering invoice generation for order:", orderId);
+        
+        const invoiceResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/razorpay/invoice`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ orderId }),
+        });
+
+        const invoiceResult = await invoiceResponse.json();
+        
+        if (invoiceResult.success) {
+          console.log("✅ Invoice generated successfully:", invoiceResult.invoiceId);
+        } else {
+          console.error("⚠️ Invoice generation failed:", invoiceResult.error);
+          // Don't fail the payment verification if invoice generation fails
+        }
+      } catch (invoiceError) {
+        console.error("⚠️ Invoice generation error (non-critical):", invoiceError);
+        // Continue with payment verification success even if invoice fails
+      }
+
       return NextResponse.json({
         success: true,
         message: "Payment verified successfully",

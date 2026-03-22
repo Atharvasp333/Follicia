@@ -61,7 +61,7 @@ const slideVariants = {
 
 
 
-const AUTOPLAY_INTERVAL = 5000;
+const AUTOPLAY_INTERVAL = 3000;
 
 export default function HeroCarousel() {
   const [[page, direction], setPage] = useState([0, 0]);
