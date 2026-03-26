@@ -22,6 +22,7 @@ import HeroCarousel from "@/components/HeroCarousel";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import ProductGrid from "@/components/ProductGrid";
 import Toast from "@/components/Toast";
+import PricingSection from "@/components/PricingSection";
 
 /* ── Animation helpers ──────────────────────────────────── */
 const E: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -475,6 +476,9 @@ export default function HomePage() {
           @media (max-width: 767px) { .steps-grid { grid-template-columns: 1fr !important; } }
         `}</style>
       </section>
+
+      {/* ══ PRICING SECTION ═════════════════════════════ */}
+      <PricingSection />
 
       {/* ══ CTA BANNER ══════════════════════════════════ */}
       <section style={{ padding: "6rem 1.5rem" }}>

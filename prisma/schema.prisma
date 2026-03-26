@@ -29,6 +29,9 @@ model User {
   // Firebase authentication UID
   firebaseUid    String?  @unique
   imageUrl       String?
+  // Membership plan
+  plan           String?  // "bronze", "silver", "gold"
+  planName       String?  // "Bronze", "Silver", "Gold"
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

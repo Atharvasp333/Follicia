@@ -9,6 +9,7 @@ import {
   Settings,
   TrendingUp,
   Package,
+  Plus,
 } from "lucide-react";
 
 const B = {
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/admin/analytics", icon: TrendingUp, label: "Analytics" },
   { href: "/admin/inventory", icon: Package, label: "Stock Management" },
+  { href: "/admin/products/add", icon: Plus, label: "Add Product" },
   { href: "/admin/orders", icon: ShoppingBag, label: "Orders" },
   { href: "/admin/customers", icon: Users, label: "Users" },
 ];

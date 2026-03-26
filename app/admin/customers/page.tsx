@@ -15,7 +15,7 @@ const B = {
   darkText: "#2C4A42",
 };
 
-type Tier = "GOLD" | "SILVER" | "BRONZE";
+type Tier = "GOLD" | "SILVER" | "BRONZE" | "NONE";
 
 interface User {
   id: string;
@@ -23,6 +23,8 @@ interface User {
   email: string;
   imageUrl?: string;
   tier: Tier;
+  plan: string | null;
+  planName: string | null;
   totalSpend: number;
   totalOrders: number;
   lastOrderDate: string | null;
@@ -96,6 +98,10 @@ export default function UsersPage() {
       BRONZE: {
         background: "linear-gradient(135deg, #CD7F32 0%, #B8733A 100%)",
         color: "#3A2010",
+      },
+      NONE: {
+        background: "#E8EDEB",
+        color: "#9AABA5",
       },
     };
     return styles[tier];
@@ -184,6 +190,7 @@ export default function UsersPage() {
             <option value="GOLD">Gold</option>
             <option value="SILVER">Silver</option>
             <option value="BRONZE">Bronze</option>
+            <option value="NONE">No Plan</option>
           </select>
           <ChevronDown
             size={14}
@@ -281,7 +288,7 @@ export default function UsersPage() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  {user.tier}
+                  {user.tier === "NONE" ? "No Plan" : user.tier}
                 </div>
               </div>
 
@@ -430,7 +437,7 @@ export default function UsersPage() {
                       letterSpacing: "0.5px",
                     }}
                   >
-                    {selectedUser.tier}
+                    {selectedUser.tier === "NONE" ? "No Plan" : selectedUser.tier}
                   </div>
                 </div>
               </div>
@@ -500,6 +507,13 @@ export default function UsersPage() {
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "0.75rem", background: B.offWhite, borderRadius: "8px" }}>
                     <span style={{ fontSize: "0.85rem", color: B.midGray }}>Email</span>
                     <span style={{ fontSize: "0.85rem", fontWeight: 500, color: B.darkText }}>{selectedUser.email}</span>
+                  </div>
+                  
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "0.75rem", background: B.offWhite, borderRadius: "8px" }}>
+                    <span style={{ fontSize: "0.85rem", color: B.midGray }}>Membership Plan</span>
+                    <span style={{ fontSize: "0.85rem", fontWeight: 600, color: B.darkText }}>
+                      {selectedUser.planName || "No Active Plan"}
+                    </span>
                   </div>
                   
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "0.75rem", background: B.offWhite, borderRadius: "8px" }}>

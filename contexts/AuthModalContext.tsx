@@ -15,6 +15,8 @@ interface DbUser {
   porosity: string | null;
   scalpCondition: string | null;
   imageUrl: string | null;
+  plan: string | null;
+  planName: string | null;
 }
 
 interface AuthModalContextType {
@@ -24,6 +26,7 @@ interface AuthModalContextType {
   currentUser: User | null;
   dbUser: DbUser | null;
   isLoading: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthModalContext = createContext<AuthModalContextType | undefined>(undefined);
@@ -37,24 +40,40 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   const openModal = () => setIsAuthModalOpen(true);
   const closeModal = () => setIsAuthModalOpen(false);
 
+  const syncUserWithDb = async (user: User) => {
+    try {
+      console.log('🔄 Syncing user with DB:', user.uid);
+      const res = await axios.post('/api/auth/sync-user', {
+        firebaseUid: user.uid,
+        email: user.email,
+        name: user.displayName,
+        imageUrl: user.photoURL,
+      });
+      if (res.data.success) {
+        console.log('✅ User synced:', res.data.user);
+        setDbUser(res.data.user);
+      }
+    } catch (error: any) {
+      console.error("❌ Failed to sync user with DB", error);
+      console.error("Error response:", error.response?.data);
+    }
+  };
+
+  const refreshUser = async () => {
+    console.log('🔄 Refreshing user data...');
+    if (currentUser) {
+      await syncUserWithDb(currentUser);
+      console.log('✅ User data refreshed');
+    } else {
+      console.warn('⚠️ No current user to refresh');
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
-        // Sync with Neon DB
-        try {
-          const res = await axios.post('/api/auth/sync-user', {
-            firebaseUid: user.uid,
-            email: user.email,
-            name: user.displayName,
-            imageUrl: user.photoURL,
-          });
-          if (res.data.success) {
-            setDbUser(res.data.user);
-          }
-        } catch (error) {
-          console.error("Failed to sync user with DB", error);
-        }
+        await syncUserWithDb(user);
       } else {
         setDbUser(null);
       }
@@ -65,7 +84,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthModalContext.Provider value={{ openModal, closeModal, isAuthModalOpen, currentUser, dbUser, isLoading }}>
+    <AuthModalContext.Provider value={{ openModal, closeModal, isAuthModalOpen, currentUser, dbUser, isLoading, refreshUser }}>
       {children}
       <AuthModal isOpen={isAuthModalOpen} onClose={closeModal} />
     </AuthModalContext.Provider>

@@ -3,6 +3,7 @@ import { Playfair_Display, Montserrat, Inter } from "next/font/google";
 import "./globals.css";
 import { AuthModalProvider } from "@/contexts/AuthModalContext";
 import { CartProvider } from "@/contexts/CartContext";
+import ToastProvider from "@/components/ToastProvider";
 
 /* ─── Font loading (Next.js optimised, no @import needed in CSS) ──── */
 const playfair = Playfair_Display({
@@ -53,6 +54,7 @@ export default function RootLayout({
         <AuthModalProvider>
           <CartProvider>
             {children}
+            <ToastProvider />
           </CartProvider>
         </AuthModalProvider>
       </body>

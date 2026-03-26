@@ -14,6 +14,7 @@ import {
   Leaf,
   Menu,
   ChevronRight,
+  Crown,
 } from "lucide-react";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { auth } from "@/lib/firebase";
@@ -33,6 +34,13 @@ const NAV_ITEMS = [
     href: "/dashboard/dna",
     icon: Dna,
     exact: false,
+  },
+  {
+    label: "Membership",
+    href: "/dashboard/membership",
+    icon: Crown,
+    exact: false,
+    dynamic: true, // This label will be dynamic based on user plan
   },
   {
     label: "Order Archives",
@@ -62,6 +70,20 @@ function DashboardSidebar({
   const isActive = (item: (typeof NAV_ITEMS)[0]) => {
     if (item.exact) return pathname === item.href;
     return pathname.startsWith(item.href);
+  };
+
+  const getItemLabel = (item: (typeof NAV_ITEMS)[0]) => {
+    if (item.dynamic && item.label === "Membership") {
+      if (dbUser?.plan && dbUser?.planName) {
+        return `My Plan (${dbUser.planName})`;
+      }
+      return "Upgrade Plan";
+    }
+    return item.label;
+  };
+
+  const hasNewBadge = (item: (typeof NAV_ITEMS)[0]) => {
+    return item.dynamic && item.label === "Membership" && !dbUser?.plan;
   };
 
   const handleSignOut = async () => {
@@ -263,7 +285,18 @@ function DashboardSidebar({
                 }}
               >
                 <Icon size={15} />
-                <span style={{ flex: 1 }}>{item.label}</span>
+                <span style={{ flex: 1 }}>{getItemLabel(item)}</span>
+                {hasNewBadge(item) && (
+                  <div
+                    style={{
+                      width: "6px",
+                      height: "6px",
+                      borderRadius: "50%",
+                      background: "#2A9D8F",
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
                 {active && (
                   <ChevronRight size={13} style={{ opacity: 0.5 }} />
                 )}

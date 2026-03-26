@@ -20,6 +20,7 @@ export async function GET() {
       criticalStockCount,
       orders,
       usersByHairType,
+      usersByPlan,
       atRiskProducts,
       topRegions,
     ] = await Promise.all([
@@ -61,6 +62,12 @@ export async function GET() {
         by: ["hairType"],
         _count: { id: true },
         where: { hairType: { not: null } },
+      }),
+      
+      // 6b. Membership Tier Distribution
+      prisma.user.groupBy({
+        by: ["plan"],
+        _count: { id: true },
       }),
       
       // 7. At-Risk Inventory
@@ -141,6 +148,36 @@ export async function GET() {
       percentage: totalProfiles > 0 ? Math.round((b.value / totalProfiles) * 100) : 0,
     }));
 
+    // Process membership tier distribution
+    const membershipDistribution = [
+      {
+        name: "Gold",
+        value: usersByPlan.find(u => u.plan === "gold")?._count.id || 0,
+        color: "#FFD700",
+      },
+      {
+        name: "Silver",
+        value: usersByPlan.find(u => u.plan === "silver")?._count.id || 0,
+        color: "#C0C0C0",
+      },
+      {
+        name: "Bronze",
+        value: usersByPlan.find(u => u.plan === "bronze")?._count.id || 0,
+        color: "#CD7F32",
+      },
+      {
+        name: "No Plan",
+        value: usersByPlan.find(u => u.plan === null)?._count.id || 0,
+        color: "#E8EDEB",
+      },
+    ];
+
+    const totalMembers = membershipDistribution.reduce((sum, m) => sum + m.value, 0);
+    const membershipDistributionWithPercent = membershipDistribution.map(m => ({
+      ...m,
+      percentage: totalMembers > 0 ? Math.round((m.value / totalMembers) * 100) : 0,
+    }));
+
     // Calculate average daily sales for depletion forecast
     const avgDailySales = orders.length > 0 ? orders.length / 30 : 0;
 
@@ -156,6 +193,7 @@ export async function GET() {
       },
       salesVelocity: salesVelocityData,
       biologicalDistribution: biologicalDistributionWithPercent,
+      membershipDistribution: membershipDistributionWithPercent,
       atRiskProducts: atRiskProducts.map(p => {
         const depletionDays = avgDailySales > 0 ? Math.ceil(p.stock / avgDailySales) : null;
         return {
@@ -181,6 +219,7 @@ export async function GET() {
       criticalStock: { count: 0 },
       salesVelocity: [],
       biologicalDistribution: [],
+      membershipDistribution: [],
       atRiskProducts: [],
       topRegions: [],
       error: "Partial data loaded due to database error",
