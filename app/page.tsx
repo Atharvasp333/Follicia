@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import Link from "next/link";
 import {
@@ -23,6 +23,7 @@ import MarqueeBanner from "@/components/MarqueeBanner";
 import ProductGrid from "@/components/ProductGrid";
 import Toast from "@/components/Toast";
 import PricingSection from "@/components/PricingSection";
+import { QuizPopup } from "@/components/QuizPopup";
 
 /* ── Animation helpers ──────────────────────────────────── */
 const E: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -128,6 +129,20 @@ function ComparisonChart() {
 /* ── Page ───────────────────────────────────────────────── */
 export default function HomePage() {
   const [showToast, setShowToast] = useState(false);
+  const [isQuizPopupOpen, setIsQuizPopupOpen] = useState(false);
+
+  useEffect(() => {
+    // Check if the popup has already been shown in this session (optional, but good practice)
+    const hasShownPopup = sessionStorage.getItem("quizPopupShown");
+    
+    if (!hasShownPopup) {
+      const timer = setTimeout(() => {
+        setIsQuizPopupOpen(true);
+        sessionStorage.setItem("quizPopupShown", "true");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const handleAddToCart = () => {
     setShowToast(true);
@@ -137,6 +152,8 @@ export default function HomePage() {
     <main
       style={{ background: "#F4F7F5", minHeight: "100vh", overflowX: "hidden" }}
     >
+      <QuizPopup isOpen={isQuizPopupOpen} onClose={() => setIsQuizPopupOpen(false)} />
+      
       {/* ── Shared navbar ──────────────────── */}
       <Navbar />
 
