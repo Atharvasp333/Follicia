@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -527,6 +527,7 @@ function ProductModal({
   const [added, setAdded] = useState(false);
   const { addToCart } = useCart();
   const { getProduct } = useInventoryStore();
+  const hasTrackedView = useRef(false); // Prevent duplicate tracking
   
   // Get real-time inventory data from store, fallback to product prop
   const inventoryProduct = product ? getProduct(product.id) : null;
@@ -534,6 +535,34 @@ function ProductModal({
   const inStock = currentStock > 0;
   const lowStockThreshold = inventoryProduct?.lowStockThreshold ?? product?.lowStockThreshold ?? 5;
   const isLowStock = inStock && currentStock <= lowStockThreshold;
+
+  // VIEW TRACKING: Track when modal opens (only once per session)
+  useEffect(() => {
+    if (product && !hasTrackedView.current) {
+      hasTrackedView.current = true;
+      
+      // Track view event
+      fetch('/api/stats/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: product.id,
+          eventType: 'viewsCount',
+        }),
+      }).catch(error => {
+        console.error('Failed to track product view:', error);
+      });
+      
+      console.log('👁️ Product view tracked:', product.name);
+    }
+    
+    // Reset tracking flag when modal closes
+    return () => {
+      if (!product) {
+        hasTrackedView.current = false;
+      }
+    };
+  }, [product]);
 
   const handleAdd = async () => {
     if (!product || !inStock) return;

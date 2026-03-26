@@ -39,10 +39,38 @@ export async function POST(req: NextRequest) {
         },
         include: {
           items: true,
+          user: true,
         },
       });
 
       console.log("✅ Order status updated to PROCESSING");
+
+      // POST-PURCHASE WIPE: Clear user's cart from database
+      try {
+        await prisma.cartItem.deleteMany({
+          where: { userId: order.userId },
+        });
+        console.log("🧹 User cart cleared from database");
+      } catch (cartError) {
+        console.error("⚠️ Failed to clear cart from database (non-critical):", cartError);
+      }
+
+      // Track purchase events for analytics
+      try {
+        for (const item of order.items) {
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              purchaseCount: {
+                increment: item.quantity,
+              },
+            },
+          });
+        }
+        console.log("✅ Purchase tracking updated");
+      } catch (trackingError) {
+        console.error("⚠️ Failed to update purchase tracking (non-critical):", trackingError);
+      }
 
       // Decrement inventory for each purchased item
       try {
@@ -98,13 +126,33 @@ export async function POST(req: NextRequest) {
     } else {
       console.error("❌ Payment signature verification failed");
       
-      // Log failed payment attempt
-      await prisma.order.update({
+      // Log failed payment attempt and track cancellations
+      const order = await prisma.order.update({
         where: { id: orderId },
         data: {
           status: "CANCELLED",
         },
+        include: {
+          items: true,
+        },
       });
+
+      // Track cancellation events for analytics
+      try {
+        for (const item of order.items) {
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              cancelCount: {
+                increment: item.quantity,
+              },
+            },
+          });
+        }
+        console.log("✅ Cancellation tracking updated");
+      } catch (trackingError) {
+        console.error("⚠️ Failed to update cancellation tracking (non-critical):", trackingError);
+      }
 
       return NextResponse.json(
         {

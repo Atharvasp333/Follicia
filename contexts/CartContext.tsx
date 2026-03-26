@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useRef } from "react";
 import { useAuthModal } from "./AuthModalContext";
 import axios from "axios";
+import { trackProductEvent } from "@/lib/tracking";
 
 export interface CartItem {
   productId: string;
@@ -20,7 +21,7 @@ interface CartContextType {
   removeFromCart: (productId: string) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
-  validateStock: () => Promise<{ valid: boolean; outOfStock: string[] }>;
+  validateStock: () => Promise<{ valid: boolean; outOfStock: string[]; insufficientStock: Array<{ name: string; available: number; requested: number }> }>;
   cartCount: number;
   subtotal: number;
   isLoading: boolean;
@@ -34,7 +35,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { currentUser, dbUser, isLoading: authLoading } = useAuthModal();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasMerged, setHasMerged] = useState(false);
+  const hasInitialized = useRef(false); // Track if cart has been initialized
+  const isSyncing = useRef(false); // Prevent concurrent syncs
 
   // DEBUG: Log cart changes
   useEffect(() => {
@@ -42,101 +44,68 @@ export function CartProvider({ children }: { children: ReactNode }) {
     console.log("🛒 Cart count:", cartItems.reduce((sum, item) => sum + item.quantity, 0));
   }, [cartItems]);
 
-  // Load cart from localStorage on mount
+  // SINGLE INITIALIZATION: Load cart once on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(CART_STORAGE_KEY);
-      console.log("📦 Loading cart from localStorage:", stored);
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          setCartItems(parsed);
-          console.log("✅ Cart loaded from localStorage:", parsed);
-        } catch (error) {
-          console.error("❌ Failed to parse cart from localStorage", error);
-        }
-      }
-      setIsLoading(false);
-    }
-  }, []);
+    if (hasInitialized.current || authLoading) return;
 
-  // Guest-to-User merge strategy
-  useEffect(() => {
-    if (authLoading || hasMerged || !currentUser || !dbUser) return;
+    const initializeCart = async () => {
+      console.log("� Initializing cart...");
+      hasInitialized.current = true;
 
-    const mergeGuestCart = async () => {
-      console.log("🔄 Starting cart merge for user:", dbUser.id);
-      
-      // Get current cart from state at the time of merge
-      setCartItems((currentCart) => {
-        // Start async merge process
-        (async () => {
-          if (currentCart.length > 0) {
+      try {
+        if (dbUser) {
+          // User is authenticated - load from DB
+          console.log("👤 User authenticated, loading from DB...");
+          const response = await axios.get(`/api/cart?userId=${dbUser.id}`);
+          const dbCart: CartItem[] = response.data.items || [];
+          console.log("📦 Loaded DB cart:", dbCart);
+          
+          setCartItems(dbCart);
+          localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(dbCart));
+        } else {
+          // Guest user - load from localStorage
+          console.log("👻 Guest user, loading from localStorage...");
+          const stored = localStorage.getItem(CART_STORAGE_KEY);
+          
+          if (stored) {
             try {
-              console.log("📥 Fetching DB cart for merge...");
-              const response = await axios.get(`/api/cart?userId=${dbUser.id}`);
-              const dbCart: CartItem[] = response.data.items || [];
-              console.log("📦 DB cart:", dbCart);
-
-              // Merge logic: combine local and DB carts
-              const mergedCart = [...dbCart];
-              
-              currentCart.forEach((localItem) => {
-                const existingIndex = mergedCart.findIndex(
-                  (item) => item.productId === localItem.productId
-                );
-                
-                if (existingIndex >= 0) {
-                  mergedCart[existingIndex].quantity += localItem.quantity;
+              const parsed = JSON.parse(stored);
+              // DUPLICATION FIX: Ensure unique items by productId
+              const uniqueCart = parsed.reduce((acc: CartItem[], item: CartItem) => {
+                const existing = acc.find(i => i.productId === item.productId);
+                if (existing) {
+                  existing.quantity += item.quantity;
                 } else {
-                  mergedCart.push(localItem);
+                  acc.push(item);
                 }
-              });
-
-              console.log("🔀 Merged cart:", mergedCart);
-
-              // Sync merged cart to DB
-              await axios.post("/api/cart/sync", {
-                userId: dbUser.id,
-                items: mergedCart,
-              });
-
-              // Update state with merged cart
-              setCartItems(mergedCart);
-              localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(mergedCart));
+                return acc;
+              }, []);
               
-              console.log("✅ Cart merged successfully");
+              setCartItems(uniqueCart);
+              console.log("✅ Cart loaded from localStorage (deduplicated):", uniqueCart);
             } catch (error) {
-              console.error("❌ Failed to merge cart", error);
+              console.error("❌ Failed to parse cart from localStorage", error);
+              setCartItems([]);
             }
           } else {
-            // No local cart - just load from DB
-            try {
-              console.log("📥 Loading cart from DB (no local cart)...");
-              const response = await axios.get(`/api/cart?userId=${dbUser.id}`);
-              const dbCart: CartItem[] = response.data.items || [];
-              console.log("📦 Loaded DB cart:", dbCart);
-              setCartItems(dbCart);
-              localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(dbCart));
-            } catch (error) {
-              console.error("❌ Failed to load cart from DB", error);
-            }
+            console.log("� No cart found in localStorage");
+            setCartItems([]);
           }
-        })();
-        
-        // Return current cart unchanged (async operation will update it)
-        return currentCart;
-      });
-      
-      setHasMerged(true);
+        }
+      } catch (error) {
+        console.error("❌ Failed to initialize cart", error);
+        setCartItems([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    mergeGuestCart();
-  }, [currentUser, dbUser, authLoading, hasMerged]);
+    initializeCart();
+  }, [dbUser, authLoading]);
 
-  // Sync to localStorage whenever cart changes
+  // Sync to localStorage whenever cart changes (after initialization)
   useEffect(() => {
-    if (typeof window !== "undefined" && !isLoading) {
+    if (typeof window !== "undefined" && hasInitialized.current && !isLoading && !isSyncing.current) {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
       console.log("💾 Saved to localStorage:", cartItems);
     }
@@ -144,8 +113,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Sync to DB if user is authenticated
   const syncToDb = async (items: CartItem[]) => {
-    if (dbUser) {
+    if (dbUser && !isSyncing.current) {
       try {
+        isSyncing.current = true;
         console.log("☁️ Syncing to DB:", items);
         await axios.post("/api/cart/sync", {
           userId: dbUser.id,
@@ -154,13 +124,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
         console.log("✅ Synced to DB");
       } catch (error) {
         console.error("❌ Failed to sync cart to DB", error);
+      } finally {
+        isSyncing.current = false;
       }
     }
   };
 
+  // DUPLICATION FIX: Add to cart with find check
   const addToCart = async (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
     console.log("➕ Adding to cart:", item);
     const quantity = item.quantity || 1;
+    
+    // Track add to cart event
+    trackProductEvent(item.productId, "addToCartCount");
     
     // Check stock availability before adding
     try {
@@ -182,7 +158,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       if (availableStock === 0) {
         console.error("❌ Product is out of stock");
-        // You can emit an event or use a toast notification here
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('cart-error', { 
             detail: { message: `Sorry, ${item.name} is currently out of stock.` }
@@ -195,7 +170,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         console.error(`❌ Insufficient stock. Available: ${availableStock}, Requested: ${totalQuantity}`);
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('cart-error', { 
-            detail: { message: `Sorry, only ${availableStock} units of ${item.name} are currently available in the lab.` }
+            detail: { message: `Sorry, only ${availableStock} units of ${item.name} are available.` }
           }));
         }
         return;
@@ -206,17 +181,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     
     setCartItems((prev) => {
+      // DUPLICATION FIX: Find existing item by productId
       const existingIndex = prev.findIndex((i) => i.productId === item.productId);
       
       let newCart: CartItem[];
       if (existingIndex >= 0) {
-        // Item exists - update quantity
+        // Item exists - INCREMENT quantity only
         newCart = prev.map((i, idx) =>
           idx === existingIndex ? { ...i, quantity: i.quantity + quantity } : i
         );
         console.log("📝 Updated existing item quantity");
       } else {
-        // New item
+        // New item - ADD to cart
         newCart = [...prev, { ...item, quantity }];
         console.log("🆕 Added new item to cart");
       }
@@ -239,14 +215,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  // NEGATIVE QUANTITY FIX: Ensure quantity cannot go below 1
   const updateQuantity = async (productId: string, quantity: number) => {
     console.log("🔢 Updating quantity:", productId, quantity);
+    
+    // NEGATIVE QUANTITY FIX: Remove item if quantity is 0 or below
     if (quantity < 1) {
+      console.log("⚠️ Quantity below 1, removing item");
       await removeFromCart(productId);
       return;
     }
     
     setCartItems((prev) => {
+      const existingItem = prev.find((item) => item.productId === productId);
+      
+      // MULTI-POINT TRACKING: Track add-to-cart when quantity increases
+      if (existingItem && quantity > existingItem.quantity) {
+        const quantityIncrease = quantity - existingItem.quantity;
+        console.log(`📈 Quantity increased by ${quantityIncrease}, tracking add-to-cart`);
+        
+        // Track each quantity increase as an add-to-cart event
+        for (let i = 0; i < quantityIncrease; i++) {
+          trackProductEvent(productId, "addToCartCount");
+        }
+      }
+      
       const newCart = prev.map((item) =>
         item.productId === productId ? { ...item, quantity } : item
       );
@@ -255,19 +248,38 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  // POST-PURCHASE WIPE: Clear cart completely
   const clearCart = async () => {
-    console.log("🧹 Clearing cart");
+    console.log("🧹 Clearing cart (POST-PURCHASE WIPE)");
+    
+    // Clear state
     setCartItems([]);
+    
+    // Clear localStorage
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(CART_STORAGE_KEY);
+      console.log("�️ Cleared localStorage");
+    }
+    
+    // Clear DB if user is authenticated
     if (dbUser) {
       try {
         await axios.delete(`/api/cart?userId=${dbUser.id}`);
+        console.log("🗑️ Cleared DB cart");
       } catch (error) {
         console.error("❌ Failed to clear cart in DB", error);
       }
     }
+    
+    console.log("✅ Cart cleared successfully");
   };
 
-  const validateStock = async (): Promise<{ valid: boolean; outOfStock: string[] }> => {
+  // STOCK VALIDATION: Validate cart items against current inventory
+  const validateStock = async (): Promise<{ 
+    valid: boolean; 
+    outOfStock: string[];
+    insufficientStock: Array<{ name: string; available: number; requested: number }>;
+  }> => {
     console.log("🔍 Validating stock for cart items");
     
     try {
@@ -275,26 +287,42 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const products = response.data.products;
       
       const outOfStock: string[] = [];
+      const insufficientStock: Array<{ name: string; available: number; requested: number }> = [];
       
       for (const cartItem of cartItems) {
         const product = products.find((p: any) => p.id === cartItem.productId);
         
-        if (!product || product.inventoryCount < cartItem.quantity) {
+        if (!product) {
           outOfStock.push(cartItem.name);
-          console.log(`⚠️ ${cartItem.name} is out of stock or insufficient quantity`);
+          console.log(`⚠️ ${cartItem.name} not found in inventory`);
+          continue;
+        }
+        
+        const availableStock = product.inventoryCount || 0;
+        
+        if (availableStock === 0) {
+          outOfStock.push(cartItem.name);
+          console.log(`⚠️ ${cartItem.name} is out of stock`);
+        } else if (availableStock < cartItem.quantity) {
+          insufficientStock.push({
+            name: cartItem.name,
+            available: availableStock,
+            requested: cartItem.quantity,
+          });
+          console.log(`⚠️ ${cartItem.name} has insufficient stock (available: ${availableStock}, requested: ${cartItem.quantity})`);
         }
       }
       
-      if (outOfStock.length > 0) {
-        console.log("❌ Stock validation failed:", outOfStock);
-        return { valid: false, outOfStock };
+      if (outOfStock.length > 0 || insufficientStock.length > 0) {
+        console.log("❌ Stock validation failed");
+        return { valid: false, outOfStock, insufficientStock };
       }
       
       console.log("✅ Stock validation passed");
-      return { valid: true, outOfStock: [] };
+      return { valid: true, outOfStock: [], insufficientStock: [] };
     } catch (error) {
       console.error("❌ Failed to validate stock", error);
-      return { valid: false, outOfStock: [] };
+      return { valid: false, outOfStock: [], insufficientStock: [] };
     }
   };
 

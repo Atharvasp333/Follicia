@@ -10,7 +10,7 @@ export default function AdminLayout({
       <AdminSidebar />
       <main
         style={{
-          marginLeft: "64px",
+          marginLeft: "240px",
           flex: 1,
           overflowY: "auto",
         }}

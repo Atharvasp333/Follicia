@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Package,
   ShoppingBag,
   Users,
   Settings,
-  Warehouse,
+  TrendingUp,
+  Package,
 } from "lucide-react";
 
 const B = {
@@ -20,10 +20,10 @@ const B = {
 
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/analytics", icon: TrendingUp, label: "Analytics" },
+  { href: "/admin/inventory", icon: Package, label: "Stock Management" },
   { href: "/admin/orders", icon: ShoppingBag, label: "Orders" },
-  { href: "/admin/products", icon: Package, label: "Products" },
-  { href: "/admin/inventory", icon: Warehouse, label: "Inventory" },
-  { href: "/admin/customers", icon: Users, label: "Customers" },
+  { href: "/admin/customers", icon: Users, label: "Users" },
 ];
 
 export default function AdminSidebar() {
@@ -32,7 +32,7 @@ export default function AdminSidebar() {
   return (
     <aside
       style={{
-        width: "64px",
+        width: "240px",
         height: "100vh",
         background: B.teal,
         position: "fixed",
@@ -40,8 +40,7 @@ export default function AdminSidebar() {
         top: 0,
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        padding: "1.5rem 0",
+        padding: "2rem 0",
         zIndex: 50,
       }}
     >
@@ -49,26 +48,45 @@ export default function AdminSidebar() {
       <Link
         href="/admin"
         style={{
-          width: "40px",
-          height: "40px",
-          borderRadius: "12px",
-          background: "rgba(255,255,255,0.1)",
+          padding: "0 1.5rem",
+          marginBottom: "3rem",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          marginBottom: "3rem",
-          fontFamily: "var(--font-playfair), serif",
-          fontSize: "1.5rem",
-          fontWeight: 700,
-          color: B.offWhite,
+          gap: "0.75rem",
           textDecoration: "none",
         }}
       >
-        F
+        <div
+          style={{
+            width: "36px",
+            height: "36px",
+            borderRadius: "10px",
+            background: "rgba(255,255,255,0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: "var(--font-playfair), serif",
+            fontSize: "1.25rem",
+            fontWeight: 700,
+            color: B.offWhite,
+          }}
+        >
+          F
+        </div>
+        <span
+          style={{
+            fontFamily: "var(--font-playfair), serif",
+            fontSize: "1.25rem",
+            fontWeight: 600,
+            color: B.offWhite,
+          }}
+        >
+          Follicia
+        </span>
       </Link>
 
       {/* Navigation */}
-      <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+      <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.25rem", padding: "0 1rem" }}>
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -77,64 +95,75 @@ export default function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              title={item.label}
               style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "12px",
-                background: isActive ? "rgba(255,255,255,0.15)" : "transparent",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                color: isActive ? B.offWhite : "rgba(255,255,255,0.6)",
+                gap: "0.75rem",
+                padding: "0.75rem 1rem",
+                borderRadius: "10px",
+                background: isActive ? B.seafoam : "transparent",
+                color: isActive ? "white" : "rgba(255,255,255,0.7)",
+                fontFamily: "var(--font-inter), sans-serif",
+                fontSize: "14px",
+                fontWeight: 500,
                 transition: "all 0.2s ease",
                 textDecoration: "none",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
                   e.currentTarget.style.background = "rgba(255,255,255,0.08)";
-                  e.currentTarget.style.color = B.offWhite;
+                  e.currentTarget.style.color = "white";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
                   e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "rgba(255,255,255,0.6)";
+                  e.currentTarget.style.color = "rgba(255,255,255,0.7)";
                 }
               }}
             >
-              <Icon size={20} />
+              <Icon size={18} />
+              <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
       {/* Settings */}
-      <Link
-        href="/admin/settings"
-        title="Settings"
-        style={{
-          width: "40px",
-          height: "40px",
-          borderRadius: "12px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "rgba(255,255,255,0.6)",
-          transition: "all 0.2s ease",
-          textDecoration: "none",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "rgba(255,255,255,0.08)";
-          e.currentTarget.style.color = B.offWhite;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "transparent";
-          e.currentTarget.style.color = "rgba(255,255,255,0.6)";
-        }}
-      >
-        <Settings size={20} />
-      </Link>
+      <div style={{ padding: "0 1rem", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "1rem" }}>
+        <Link
+          href="/admin/settings"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            padding: "0.75rem 1rem",
+            borderRadius: "10px",
+            background: pathname === "/admin/settings" ? B.seafoam : "transparent",
+            color: pathname === "/admin/settings" ? "white" : "rgba(255,255,255,0.7)",
+            fontFamily: "var(--font-inter), sans-serif",
+            fontSize: "14px",
+            fontWeight: 500,
+            transition: "all 0.2s ease",
+            textDecoration: "none",
+          }}
+          onMouseEnter={(e) => {
+            if (pathname !== "/admin/settings") {
+              e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+              e.currentTarget.style.color = "white";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (pathname !== "/admin/settings") {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+            }
+          }}
+        >
+          <Settings size={18} />
+          <span>Settings</span>
+        </Link>
+      </div>
     </aside>
   );
 }

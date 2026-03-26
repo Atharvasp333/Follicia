@@ -475,12 +475,26 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      // Validate stock before proceeding
+      // STOCK VALIDATION: Validate stock before proceeding
       console.log("🔍 Validating stock availability...");
       const stockValidation = await validateStock();
       
       if (!stockValidation.valid) {
-        alert(`The following items are out of stock or have insufficient quantity:\n\n${stockValidation.outOfStock.join('\n')}\n\nPlease update your cart and try again.`);
+        let errorMessage = "Some items in your cart are no longer available:\n\n";
+        
+        if (stockValidation.outOfStock.length > 0) {
+          errorMessage += "Out of Stock:\n" + stockValidation.outOfStock.map(name => `• ${name}`).join('\n') + "\n\n";
+        }
+        
+        if (stockValidation.insufficientStock.length > 0) {
+          errorMessage += "Insufficient Stock:\n" + stockValidation.insufficientStock.map(item => 
+            `• ${item.name}: Only ${item.available} available (you requested ${item.requested})`
+          ).join('\n');
+        }
+        
+        errorMessage += "\n\nPlease update your cart and try again.";
+        
+        alert(errorMessage);
         setIsProcessing(false);
         router.push('/cart');
         return;
@@ -492,7 +506,7 @@ export default function CheckoutPage() {
       const shippingCost = shippingMethod === "express" ? 299 : subtotal >= 2999 ? 0 : 199;
       const total = subtotal + shippingCost;
 
-      // Step 1: Create order in our database
+      // Step 1: Create order in our database (with server-side validation)
       console.log("📦 Creating order in database...");
       const orderResponse = await fetch("/api/orders", {
         method: "POST",
@@ -522,7 +536,7 @@ export default function CheckoutPage() {
       if (!orderResponse.ok) {
         const errorData = await orderResponse.json();
         console.error("Order creation failed:", errorData);
-        throw new Error(errorData.details || "Failed to create order");
+        throw new Error(errorData.error || errorData.details || "Failed to create order");
       }
 
       const orderData = await orderResponse.json();
@@ -581,14 +595,16 @@ export default function CheckoutPage() {
           if (verifyResponse.ok) {
             console.log("✅ Payment verified successfully");
             
-            // Clear cart
+            // POST-PURCHASE WIPE: Clear cart (frontend + backend + localStorage)
+            console.log("🧹 Clearing cart after successful payment...");
             await clearCart();
+            console.log("✅ Cart cleared successfully");
             
             // Show success modal
             setShowSuccess(true);
           } else {
             console.error("❌ Payment verification failed");
-            alert("Payment verification failed. Please contact support.");
+            alert("Payment verification failed. Please contact support with your order ID: " + orderId);
           }
         },
         modal: {

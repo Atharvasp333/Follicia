@@ -134,19 +134,19 @@ export default function InventoryManagementPage() {
   }
 
   return (
-    <div style={{ padding: "2rem", maxWidth: 1400, margin: "0 auto" }}>
+    <div style={{ padding: "1.5rem", maxWidth: 1400, margin: "0 auto" }}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{ marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}
+        style={{ marginBottom: "1.25rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}
       >
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-            <Package size={14} color="#2A9D8F" />
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+            <Package size={12} color="#2A9D8F" />
             <span
               style={{
-                fontSize: "0.65rem",
+                fontSize: "0.6rem",
                 fontWeight: 700,
                 color: "#2A9D8F",
                 letterSpacing: "0.2em",
@@ -160,7 +160,7 @@ export default function InventoryManagementPage() {
           <h1
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: "clamp(1.5rem, 3vw, 2.2rem)",
+              fontSize: "1.75rem",
               fontWeight: 700,
               color: "#0D3B44",
               margin: 0,
@@ -168,35 +168,35 @@ export default function InventoryManagementPage() {
           >
             Stock Management
           </h1>
-          <p style={{ marginTop: 6, color: "#6B7280", fontSize: "0.9rem", fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ marginTop: 4, color: "#6B7280", fontSize: "0.8rem", fontFamily: "'Inter', sans-serif" }}>
             Real-time inventory tracking with direct stock control
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div style={{ display: "flex", gap: 12 }}>
+        <div style={{ display: "flex", gap: 8 }}>
           {/* Sync All Button */}
           <button
             onClick={handleSyncAll}
             disabled={syncing}
             style={{
-              padding: "10px 20px",
-              borderRadius: 10,
+              padding: "8px 16px",
+              borderRadius: 8,
               background: syncing ? "#9CA3AF" : "#2A9D8F",
               border: "none",
               color: "white",
-              fontSize: "0.85rem",
+              fontSize: "0.75rem",
               fontWeight: 600,
               fontFamily: "'Montserrat', sans-serif",
               cursor: syncing ? "wait" : "pointer",
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              gap: 6,
               transition: "all 0.2s",
             }}
           >
-            {syncing ? <RefreshCw size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-            {syncing ? "Syncing..." : "Sync All Products"}
+            {syncing ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+            {syncing ? "Syncing..." : "Sync All"}
           </button>
 
           {/* Reset All Button */}
@@ -204,23 +204,23 @@ export default function InventoryManagementPage() {
             onClick={handleResetAll}
             disabled={resetting}
             style={{
-              padding: "10px 20px",
-              borderRadius: 10,
+              padding: "8px 16px",
+              borderRadius: 8,
               background: resetting ? "#9CA3AF" : "#EF4444",
               border: "none",
               color: "white",
-              fontSize: "0.85rem",
+              fontSize: "0.75rem",
               fontWeight: 600,
               fontFamily: "'Montserrat', sans-serif",
               cursor: resetting ? "wait" : "pointer",
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              gap: 6,
               transition: "all 0.2s",
             }}
           >
-            {resetting ? <RefreshCw size={16} className="animate-spin" /> : <Trash2 size={16} />}
-            {resetting ? "Resetting..." : "Reset All Stock"}
+            {resetting ? <RefreshCw size={14} className="animate-spin" /> : <Trash2 size={14} />}
+            {resetting ? "Resetting..." : "Reset All"}
           </button>
         </div>
       </motion.div>
@@ -231,7 +231,7 @@ export default function InventoryManagementPage() {
         animate={{ opacity: 1, y: 0 }}
         style={{
           background: "white",
-          borderRadius: 20,
+          borderRadius: 16,
           border: "1px solid #E8F0ED",
           overflow: "hidden",
         }}
@@ -239,13 +239,13 @@ export default function InventoryManagementPage() {
         {/* Table Header */}
         <div
           style={{
-            padding: "1rem 1.5rem",
+            padding: "0.85rem 1.25rem",
             borderBottom: "1px solid #F0F4F3",
             display: "grid",
             gridTemplateColumns: "2.5fr 1fr 1.5fr 1fr 0.8fr 1.5fr",
-            gap: "1rem",
+            gap: "0.85rem",
             fontWeight: 600,
-            fontSize: "0.75rem",
+            fontSize: "0.65rem",
             color: "#6B7280",
             textTransform: "uppercase",
             letterSpacing: "0.05em",
@@ -274,11 +274,11 @@ export default function InventoryManagementPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.03 }}
               style={{
-                padding: "1.25rem 1.5rem",
+                padding: "1rem 1.25rem",
                 borderBottom: index < products.length - 1 ? "1px solid #F0F4F3" : "none",
                 display: "grid",
                 gridTemplateColumns: "2.5fr 1fr 1.5fr 1fr 0.8fr 1.5fr",
-                gap: "1rem",
+                gap: "0.85rem",
                 alignItems: "center",
                 background: !product.isActive 
                   ? "rgba(156,163,175,0.05)" 
@@ -291,12 +291,12 @@ export default function InventoryManagementPage() {
               }}
             >
               {/* Product Info */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div
                   style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 12,
+                    width: 48,
+                    height: 48,
+                    borderRadius: 10,
                     background: "#F0F4F3",
                     backgroundImage: product.imageUrl ? `url(${product.imageUrl})` : "none",
                     backgroundSize: "cover",
@@ -308,7 +308,7 @@ export default function InventoryManagementPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: "0.9rem",
+                      fontSize: "0.8rem",
                       fontWeight: 600,
                       color: "#0D3B44",
                       fontFamily: "'Inter', sans-serif",
@@ -319,7 +319,7 @@ export default function InventoryManagementPage() {
                   >
                     {product.name}
                   </div>
-                  <div style={{ fontSize: "0.75rem", color: "#9CA3AF", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>
+                  <div style={{ fontSize: "0.7rem", color: "#9CA3AF", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>
                     ₹{product.price.toLocaleString("en-IN")}
                   </div>
                 </div>
@@ -329,9 +329,9 @@ export default function InventoryManagementPage() {
               <div style={{ textAlign: "center" }}>
                 <span
                   style={{
-                    padding: "4px 10px",
-                    borderRadius: 8,
-                    fontSize: "0.7rem",
+                    padding: "3px 8px",
+                    borderRadius: 6,
+                    fontSize: "0.65rem",
                     fontWeight: 500,
                     fontFamily: "'Inter', sans-serif",
                     background: "#F0F4F3",
@@ -344,13 +344,13 @@ export default function InventoryManagementPage() {
               </div>
 
               {/* Stock Controller */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {/* Progress Bar */}
                 <div style={{ position: "relative" }}>
                   <div
                     style={{
                       width: "100%",
-                      height: 8,
+                      height: 6,
                       background: "#F0F4F3",
                       borderRadius: 9999,
                       overflow: "hidden",
@@ -368,7 +368,7 @@ export default function InventoryManagementPage() {
                 </div>
 
                 {/* Direct Input */}
-                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
                   <input
                     type="text"
                     value={stockInputs[product.id] || "0"}
@@ -380,11 +380,11 @@ export default function InventoryManagementPage() {
                     disabled={isUpdating}
                     style={{
                       flex: 1,
-                      padding: "6px 10px",
-                      borderRadius: 8,
+                      padding: "5px 8px",
+                      borderRadius: 6,
                       border: "1.5px solid #E8F0ED",
                       textAlign: "center",
-                      fontSize: "0.9rem",
+                      fontSize: "0.8rem",
                       fontWeight: 600,
                       fontFamily: "'Inter', sans-serif",
                       color: status.color,
@@ -399,7 +399,7 @@ export default function InventoryManagementPage() {
                       e.target.style.borderColor = "#E8F0ED";
                     }}
                   />
-                  <span style={{ fontSize: "0.7rem", color: "#9CA3AF", fontFamily: "'Inter', sans-serif" }}>
+                  <span style={{ fontSize: "0.65rem", color: "#9CA3AF", fontFamily: "'Inter', sans-serif" }}>
                     units
                   </span>
                 </div>
@@ -409,20 +409,20 @@ export default function InventoryManagementPage() {
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <span
                   style={{
-                    padding: "6px 12px",
+                    padding: "5px 10px",
                     borderRadius: 9999,
-                    fontSize: "0.7rem",
+                    fontSize: "0.65rem",
                     fontWeight: 600,
                     fontFamily: "'Montserrat', sans-serif",
                     background: status.bg,
                     color: status.color,
                     display: "flex",
                     alignItems: "center",
-                    gap: 6,
+                    gap: 5,
                     whiteSpace: "nowrap",
                   }}
                 >
-                  <StatusIcon size={12} />
+                  <StatusIcon size={11} />
                   {status.label}
                 </span>
               </div>
@@ -433,9 +433,9 @@ export default function InventoryManagementPage() {
                   onClick={() => handleVisibilityToggle(product.id, product.isActive)}
                   disabled={isUpdating}
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 8,
+                    width: 32,
+                    height: 32,
+                    borderRadius: 6,
                     border: "1px solid #E8F0ED",
                     background: product.isActive ? "rgba(42,157,143,0.1)" : "rgba(156,163,175,0.1)",
                     color: product.isActive ? "#2A9D8F" : "#9CA3AF",
@@ -447,37 +447,37 @@ export default function InventoryManagementPage() {
                   }}
                   title={product.isActive ? "Hide from customers" : "Show to customers"}
                 >
-                  {product.isActive ? <Eye size={16} /> : <EyeOff size={16} />}
+                  {product.isActive ? <Eye size={14} /> : <EyeOff size={14} />}
                 </button>
               </div>
 
               {/* Actions */}
-              <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+              <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
                 {/* Refill Button */}
                 <button
                   onClick={() => handleQuickRefill(product.id)}
                   disabled={isUpdating}
                   style={{
-                    padding: "8px 16px",
-                    borderRadius: 8,
+                    padding: "6px 12px",
+                    borderRadius: 6,
                     background: isUpdating ? "#E8F0ED" : "rgba(42,157,143,0.1)",
                     border: "1px solid rgba(42,157,143,0.3)",
                     color: isUpdating ? "#9CA3AF" : "#2A9D8F",
-                    fontSize: "0.75rem",
+                    fontSize: "0.7rem",
                     fontWeight: 600,
                     fontFamily: "'Montserrat', sans-serif",
                     cursor: isUpdating ? "wait" : "pointer",
                     display: "flex",
                     alignItems: "center",
-                    gap: 6,
+                    gap: 5,
                     transition: "all 0.2s",
                     whiteSpace: "nowrap",
                   }}
                 >
                   {isUpdating ? (
-                    <RefreshCw size={14} className="animate-spin" />
+                    <RefreshCw size={12} className="animate-spin" />
                   ) : (
-                    <RefreshCw size={14} />
+                    <RefreshCw size={12} />
                   )}
                   Refill (15)
                 </button>
@@ -493,24 +493,24 @@ export default function InventoryManagementPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         style={{
-          marginTop: "2rem",
+          marginTop: "1.25rem",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "1rem",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: "0.85rem",
         }}
       >
         <div
           style={{
             background: "white",
-            padding: "1.5rem",
-            borderRadius: 16,
+            padding: "1.25rem",
+            borderRadius: 12,
             border: "1px solid #E8F0ED",
           }}
         >
-          <div style={{ fontSize: "0.75rem", color: "#6B7280", fontFamily: "'Montserrat', sans-serif", marginBottom: 8 }}>
+          <div style={{ fontSize: "0.65rem", color: "#6B7280", fontFamily: "'Montserrat', sans-serif", marginBottom: 6 }}>
             Total Products
           </div>
-          <div style={{ fontSize: "2rem", fontWeight: 700, color: "#0D3B44", fontFamily: "'Inter', sans-serif" }}>
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#0D3B44", fontFamily: "'Inter', sans-serif" }}>
             {products.length}
           </div>
         </div>
@@ -518,15 +518,15 @@ export default function InventoryManagementPage() {
         <div
           style={{
             background: "white",
-            padding: "1.5rem",
-            borderRadius: 16,
+            padding: "1.25rem",
+            borderRadius: 12,
             border: "1px solid #E8F0ED",
           }}
         >
-          <div style={{ fontSize: "0.75rem", color: "#6B7280", fontFamily: "'Montserrat', sans-serif", marginBottom: 8 }}>
+          <div style={{ fontSize: "0.65rem", color: "#6B7280", fontFamily: "'Montserrat', sans-serif", marginBottom: 6 }}>
             Out of Stock
           </div>
-          <div style={{ fontSize: "2rem", fontWeight: 700, color: "#EF4444", fontFamily: "'Inter', sans-serif" }}>
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#EF4444", fontFamily: "'Inter', sans-serif" }}>
             {products.filter((p) => p.inventoryCount === 0).length}
           </div>
         </div>
@@ -534,15 +534,15 @@ export default function InventoryManagementPage() {
         <div
           style={{
             background: "white",
-            padding: "1.5rem",
-            borderRadius: 16,
+            padding: "1.25rem",
+            borderRadius: 12,
             border: "1px solid #E8F0ED",
           }}
         >
-          <div style={{ fontSize: "0.75rem", color: "#6B7280", fontFamily: "'Montserrat', sans-serif", marginBottom: 8 }}>
+          <div style={{ fontSize: "0.65rem", color: "#6B7280", fontFamily: "'Montserrat', sans-serif", marginBottom: 6 }}>
             Low Stock
           </div>
-          <div style={{ fontSize: "2rem", fontWeight: 700, color: "#F59E0B", fontFamily: "'Inter', sans-serif" }}>
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#F59E0B", fontFamily: "'Inter', sans-serif" }}>
             {products.filter((p) => p.inventoryCount > 0 && p.inventoryCount < p.lowStockThreshold).length}
           </div>
         </div>
@@ -550,15 +550,15 @@ export default function InventoryManagementPage() {
         <div
           style={{
             background: "white",
-            padding: "1.5rem",
-            borderRadius: 16,
+            padding: "1.25rem",
+            borderRadius: 12,
             border: "1px solid #E8F0ED",
           }}
         >
-          <div style={{ fontSize: "0.75rem", color: "#6B7280", fontFamily: "'Montserrat', sans-serif", marginBottom: 8 }}>
+          <div style={{ fontSize: "0.65rem", color: "#6B7280", fontFamily: "'Montserrat', sans-serif", marginBottom: 6 }}>
             Hidden Products
           </div>
-          <div style={{ fontSize: "2rem", fontWeight: 700, color: "#9CA3AF", fontFamily: "'Inter', sans-serif" }}>
+          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#9CA3AF", fontFamily: "'Inter', sans-serif" }}>
             {products.filter((p) => !p.isActive).length}
           </div>
         </div>

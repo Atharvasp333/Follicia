@@ -6,27 +6,100 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       userId,
-      totalAmount,
+      totalAmount: clientTotalAmount,
       shippingMethod,
-      shippingCost,
+      shippingCost: clientShippingCost,
       shippingAddress,
       items,
     } = body;
 
     // Validate required fields
-    if (!userId || !totalAmount || !items || items.length === 0) {
+    if (!userId || !items || items.length === 0) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
+    // PRICE TAMPERING PROTECTION: Recalculate total on server
+    console.log("🔒 Validating prices and calculating server-side total...");
+    
+    let serverSubtotal = 0;
+    const validatedItems = [];
+
+    for (const item of items) {
+      // Fetch current product price from database
+      const product = await prisma.product.findUnique({
+        where: { id: item.productId },
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          inventoryCount: true,
+          isActive: true,
+        },
+      });
+
+      if (!product) {
+        return NextResponse.json(
+          { error: `Product ${item.productId} not found` },
+          { status: 400 }
+        );
+      }
+
+      if (!product.isActive) {
+        return NextResponse.json(
+          { error: `Product ${product.name} is no longer available` },
+          { status: 400 }
+        );
+      }
+
+      // STOCK LOCK: Validate stock availability
+      if (product.inventoryCount < item.quantity) {
+        return NextResponse.json(
+          { 
+            error: `Insufficient stock for ${product.name}. Available: ${product.inventoryCount}, Requested: ${item.quantity}` 
+          },
+          { status: 400 }
+        );
+      }
+
+      // Use server-side price (not client-submitted price)
+      const itemTotal = product.price * item.quantity;
+      serverSubtotal += itemTotal;
+
+      validatedItems.push({
+        productId: product.id,
+        quantity: parseInt(String(item.quantity), 10),
+        price: product.price, // Use server price, not client price
+      });
+    }
+
+    // Calculate server-side shipping cost
+    const serverShippingCost = shippingMethod === "express" ? 299 : serverSubtotal >= 2999 ? 0 : 199;
+    const serverTotalAmount = serverSubtotal + serverShippingCost;
+
+    // Verify client total matches server total (within 1 rupee tolerance for rounding)
+    if (Math.abs(serverTotalAmount - clientTotalAmount) > 1) {
+      console.error(`⚠️ Price mismatch detected! Client: ${clientTotalAmount}, Server: ${serverTotalAmount}`);
+      return NextResponse.json(
+        { 
+          error: "Price mismatch detected. Please refresh your cart and try again.",
+          serverTotal: serverTotalAmount,
+          clientTotal: clientTotalAmount,
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log(`✅ Price validation passed. Total: ₹${serverTotalAmount}`);
+
     // Ensure proper type coercion for Prisma
     const orderData = {
       userId: String(userId),
-      totalAmount: Number(totalAmount), // Ensure Float
+      totalAmount: serverTotalAmount, // Use server-calculated total
       shippingMethod: shippingMethod ? String(shippingMethod) : "standard",
-      shippingCost: Number(shippingCost) || 0, // Ensure Float
+      shippingCost: serverShippingCost, // Use server-calculated shipping
       shippingName: shippingAddress?.fullName ? String(shippingAddress.fullName) : null,
       shippingEmail: shippingAddress?.email ? String(shippingAddress.email) : null,
       shippingPhone: shippingAddress?.phone ? String(shippingAddress.phone) : null,
@@ -36,15 +109,11 @@ export async function POST(req: NextRequest) {
       shippingPincode: shippingAddress?.pincode ? String(shippingAddress.pincode) : null,
       status: "PENDING" as const, // Start as PENDING until payment is confirmed
       items: {
-        create: items.map((item: any) => ({
-          productId: String(item.productId),
-          quantity: parseInt(String(item.quantity), 10), // Ensure Int
-          price: Number(item.price), // Ensure Float
-        })),
+        create: validatedItems,
       },
     };
 
-    console.log("Creating order with data:", JSON.stringify(orderData, null, 2));
+    console.log("Creating order with validated data:", JSON.stringify(orderData, null, 2));
 
     // Create order with items
     const order = await prisma.order.create({
@@ -54,7 +123,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log("Order created successfully:", order.id);
+    console.log("✅ Order created successfully:", order.id);
 
     return NextResponse.json({ success: true, order }, { status: 201 });
   } catch (error) {

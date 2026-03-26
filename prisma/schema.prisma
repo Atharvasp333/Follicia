@@ -34,6 +34,7 @@ model User {
 
   orders         Order[]
   cartItems      CartItem[]
+  quizResults    QuizResult[]
 
   @@map("users")
 }
@@ -64,6 +65,11 @@ model Product {
   inventoryCount Int      @default(0)
   lowStockThreshold Int   @default(5)
   isActive       Boolean  @default(true)
+  // Product interaction tracking for analytics
+  viewsCount     Int      @default(0)
+  addToCartCount Int      @default(0)
+  purchaseCount  Int      @default(0)
+  cancelCount    Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -132,6 +138,25 @@ model CartItem {
 
   @@unique([userId, productId])
   @@map("cart_items")
+}
+
+// ─── QuizResult ────────────────────────────────────────────────────────────
+// Stores a user's raw quiz answers, AI diagnostic result, and hair goal
+model QuizResult {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Submitted answers stored as raw JSON
+  answers          Json?
+  // AI-generated diagnostic label e.g. "High Porosity Repair"
+  diagnosticResult String?
+  // User-stated hair goal e.g. "Density Amplification"
+  hairGoal         String?
+  // Whether the AI has finished processing this submission
+  analyzed         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  @@map("quiz_results")
 }
 
 // ─── Enums ─────────────────────────────────────────────────────────────────
