@@ -95,15 +95,16 @@ export async function GET(request: Request) {
       };
     });
 
-    // Calculate product-level metrics from ProductEvent table (time-filtered)
-    // Fallback to old method if ProductEvent table doesn't exist yet
+    // Calculate product-level metrics using ProductEvent for views/cart and OrderItem for actual conversions
     let topProducts = [];
     
     try {
+      // 1. Get Views and Cart events from ProductEvent table (time-filtered)
       const productEvents = await prisma.productEvent.groupBy({
         by: ['productId', 'type'],
         where: {
           createdAt: { gte: startDate, lte: now },
+          type: { in: ['VIEW', 'CART'] }, // Only get views and cart events
         },
         _count: {
           id: true,
@@ -111,35 +112,71 @@ export async function GET(request: Request) {
       });
 
       // Organize events by product
-      const productEventMap = new Map<string, { views: number; cart: number; purchase: number; cancel: number }>();
+      const productEventMap = new Map<string, { views: number; cart: number }>();
       
       productEvents.forEach(event => {
         if (!productEventMap.has(event.productId)) {
-          productEventMap.set(event.productId, { views: 0, cart: 0, purchase: 0, cancel: 0 });
+          productEventMap.set(event.productId, { views: 0, cart: 0 });
         }
         const stats = productEventMap.get(event.productId)!;
         
-        switch (event.type) {
-          case 'VIEW':
-            stats.views = event._count.id;
-            break;
-          case 'CART':
-            stats.cart = event._count.id;
-            break;
-          case 'PURCHASE':
-            stats.purchase = event._count.id;
-            break;
-          case 'CANCEL':
-            stats.cancel = event._count.id;
-            break;
+        if (event.type === 'VIEW') {
+          stats.views = event._count.id;
+        } else if (event.type === 'CART') {
+          stats.cart = event._count.id;
         }
       });
 
-      // Get product details for products with events
-      const productIds = Array.from(productEventMap.keys());
+      // 2. Get ACTUAL conversions from OrderItem table (based on completed orders in date range)
+      const orderItems = await prisma.orderItem.groupBy({
+        by: ['productId'],
+        where: {
+          order: {
+            createdAt: { gte: startDate, lte: now },
+            status: { in: ['PAID', 'SHIPPED', 'DELIVERED'] },
+          },
+        },
+        _sum: {
+          quantity: true,
+        },
+      });
+
+      // Map conversions by product
+      const conversionMap = new Map<string, number>();
+      orderItems.forEach(item => {
+        conversionMap.set(item.productId, item._sum.quantity || 0);
+      });
+
+      // 3. Get cancellations from cancelled orders
+      const cancelledItems = await prisma.orderItem.groupBy({
+        by: ['productId'],
+        where: {
+          order: {
+            createdAt: { gte: startDate, lte: now },
+            status: 'CANCELLED',
+          },
+        },
+        _sum: {
+          quantity: true,
+        },
+      });
+
+      const cancellationMap = new Map<string, number>();
+      cancelledItems.forEach(item => {
+        cancellationMap.set(item.productId, item._sum.quantity || 0);
+      });
+
+      // 4. Combine all product IDs from events and orders
+      const allProductIds = new Set([
+        ...Array.from(productEventMap.keys()),
+        ...Array.from(conversionMap.keys()),
+        ...Array.from(cancellationMap.keys()),
+      ]);
+
+      // 5. Get product details
       const products = await prisma.product.findMany({
         where: {
-          id: { in: productIds },
+          id: { in: Array.from(allProductIds) },
         },
         select: {
           id: true,
@@ -147,17 +184,17 @@ export async function GET(request: Request) {
         },
       });
 
-      // Build top products list with time-filtered data
+      // 6. Build top products list with accurate conversion data
       topProducts = products
         .map(product => {
-          const stats = productEventMap.get(product.id) || { views: 0, cart: 0, purchase: 0, cancel: 0 };
-          const views = stats.views;
-          const addToCart = stats.cart;
-          const conversions = stats.purchase;
-          const cancellations = stats.cancel;
+          const eventStats = productEventMap.get(product.id) || { views: 0, cart: 0 };
+          const views = eventStats.views;
+          const addToCart = eventStats.cart;
+          const conversions = conversionMap.get(product.id) || 0;
+          const cancellations = cancellationMap.get(product.id) || 0;
           
-          // Calculate conversion rate based on filtered data
-          const conversionRate = views > 0 ? Number(((conversions / views) * 100).toFixed(1)) : 0;
+          // Calculate conversion rate: (conversions / views) * 100
+          const conversionRate = views > 0 ? Number(((conversions / views) * 100).toFixed(2)) : 0;
           
           return {
             name: product.name,
@@ -172,48 +209,9 @@ export async function GET(request: Request) {
         .sort((a, b) => b.conversions - a.conversions) // Sort by conversions
         .slice(0, 10); // Top 10
     } catch (error) {
-      // Fallback to old method using lifetime counters if ProductEvent table doesn't exist
-      console.warn('ProductEvent table not found, using lifetime counters. Run: npx prisma db push');
-      
-      const productsWithStats = await prisma.product.findMany({
-        where: {
-          OR: [
-            { viewsCount: { gt: 0 } },
-            { addToCartCount: { gt: 0 } },
-            { purchaseCount: { gt: 0 } },
-          ],
-        },
-        select: {
-          id: true,
-          name: true,
-          viewsCount: true,
-          addToCartCount: true,
-          purchaseCount: true,
-          cancelCount: true,
-        },
-        orderBy: {
-          purchaseCount: "desc",
-        },
-        take: 10,
-      });
-
-      topProducts = productsWithStats.map(product => {
-        const views = product.viewsCount || 0;
-        const addToCart = product.addToCartCount || 0;
-        const conversions = product.purchaseCount || 0;
-        const cancellations = product.cancelCount || 0;
-        
-        const conversionRate = views > 0 ? Number(((conversions / views) * 100).toFixed(1)) : 0;
-        
-        return {
-          name: product.name,
-          views,
-          addToCart,
-          conversions,
-          cancellations,
-          conversionRate,
-        };
-      });
+      console.error('Error calculating product metrics:', error);
+      // Return empty array on error
+      topProducts = [];
     }
 
     // Summary stats
@@ -221,17 +219,26 @@ export async function GET(request: Request) {
     const totalRevenueAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
     const avgOrderValue = totalOrders > 0 ? totalRevenueAmount / totalOrders : 0;
 
-    return NextResponse.json({
-      summary: {
-        totalRevenue: totalRevenueAmount,
-        totalOrders,
-        avgOrderValue,
+    return NextResponse.json(
+      {
+        summary: {
+          totalRevenue: totalRevenueAmount,
+          totalOrders,
+          avgOrderValue,
+        },
+        revenueTimeSeries,
+        orderTimeSeries,
+        salesByCategory,
+        topProducts,
       },
-      revenueTimeSeries,
-      orderTimeSeries,
-      salesByCategory,
-      topProducts,
-    });
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching analytics:", error);
     console.error("Error details:", error instanceof Error ? error.message : "Unknown error");

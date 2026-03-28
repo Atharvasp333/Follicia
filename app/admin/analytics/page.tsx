@@ -73,7 +73,14 @@ export default function AnalyticsPage() {
         setLoading(true);
       }
       
-      const res = await fetch(`/api/admin/analytics?range=${dateRange}`);
+      // Add timestamp to force fresh data (cache busting)
+      const timestamp = new Date().getTime();
+      const res = await fetch(`/api/admin/analytics?range=${dateRange}&t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       const analyticsData = await res.json();
       setData(analyticsData);
     } catch (error) {
@@ -450,13 +457,13 @@ export default function AnalyticsPage() {
                   </div>
                   <div style={{
                     padding: "0.3rem 0.6rem",
-                    background: conversionRate > 10 ? "#E8F5E9" : conversionRate > 0 ? "#FFF3E0" : B.lightGray,
-                    color: conversionRate > 10 ? B.seafoam : conversionRate > 0 ? "#FF9800" : B.midGray,
+                    background: conversionRate > 0 ? "#E8F5E9" : B.lightGray,
+                    color: conversionRate > 0 ? B.seafoam : B.midGray,
                     borderRadius: "12px",
                     fontSize: "0.7rem",
                     fontWeight: 700,
                   }}>
-                    {conversionRate}%
+                    {conversionRate.toFixed(2)}%
                   </div>
                 </div>
               );
@@ -566,13 +573,13 @@ export default function AnalyticsPage() {
                     </span>
                     <span style={{
                       padding: "0.15rem 0.5rem",
-                      background: conversionRate > 10 ? "#E8F5E9" : conversionRate > 0 ? "#FFF3E0" : B.lightGray,
-                      color: conversionRate > 10 ? B.seafoam : conversionRate > 0 ? "#FF9800" : B.midGray,
+                      background: conversionRate > 0 ? "#E8F5E9" : B.lightGray,
+                      color: conversionRate > 0 ? B.seafoam : B.midGray,
                       borderRadius: "10px",
                       fontSize: "0.65rem",
                       fontWeight: 700,
                     }}>
-                      {conversionRate}%
+                      {conversionRate.toFixed(2)}%
                     </span>
                   </div>
                   {/* FUNNEL VISUALIZATION: Seafoam progress bar */}

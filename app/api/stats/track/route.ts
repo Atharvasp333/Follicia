@@ -24,23 +24,41 @@ export async function POST(request: Request) {
       );
     }
 
-    // Atomic increment using Prisma
-    const updatedProduct = await prisma.product.update({
-      where: { id: productId },
-      data: {
-        [eventType]: {
-          increment: 1,
+    // Map eventType to ProductEvent type
+    const eventTypeMap: Record<EventType, string> = {
+      viewsCount: "VIEW",
+      addToCartCount: "CART",
+      purchaseCount: "PURCHASE",
+      cancelCount: "CANCEL",
+    };
+
+    // Use transaction to ensure both operations succeed or fail together
+    const [updatedProduct, productEvent] = await prisma.$transaction([
+      // Update lifetime counter
+      prisma.product.update({
+        where: { id: productId },
+        data: {
+          [eventType]: {
+            increment: 1,
+          },
         },
-      },
-      select: {
-        id: true,
-        name: true,
-        viewsCount: true,
-        addToCartCount: true,
-        purchaseCount: true,
-        cancelCount: true,
-      },
-    });
+        select: {
+          id: true,
+          name: true,
+          viewsCount: true,
+          addToCartCount: true,
+          purchaseCount: true,
+          cancelCount: true,
+        },
+      }),
+      // Create ProductEvent record for time-based analytics
+      prisma.productEvent.create({
+        data: {
+          productId,
+          type: eventTypeMap[eventType],
+        },
+      }),
+    ]);
 
     return NextResponse.json({
       success: true,
