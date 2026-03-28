@@ -13,9 +13,6 @@ import {
   Home,
   FlaskConical,
   ShoppingCart,
-  BookOpen,
-  Info,
-  ChevronRight,
   LogOut,
 } from "lucide-react";
 import Link from "next/link";
@@ -25,23 +22,14 @@ import { signOut } from "firebase/auth";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useCart } from "@/contexts/CartContext";
 
-const NAV_LINKS = [
-  { label: "Shop", href: "/shop", icon: <ShoppingCart size={16} /> },
-  { label: "Consultation", href: "#how-it-works", icon: <FlaskConical size={16} /> },
-  { label: "Science", href: "#science", icon: <BookOpen size={16} /> },
-  { label: "About", href: "#about", icon: <Info size={16} /> },
-];
-
 const SIDEBAR_LINKS = [
-  { label: "Home", href: "/", icon: <Home size={18} /> },
-  { label: "Shop All", href: "/shop", icon: <ShoppingCart size={18} /> },
-  { label: "Consultation", href: "#how-it-works", icon: <FlaskConical size={18} /> },
-  { label: "Science", href: "#science", icon: <FlaskConical size={18} /> },
-  { label: "My Routine", href: "/dashboard", icon: <BookOpen size={18} /> },
-  { label: "About Us", href: "#about", icon: <Info size={18} /> },
+  { label: "HOME", href: "/", icon: Home },
+  { label: "SHOP ALL", href: "/shop", icon: ShoppingCart },
+  { label: "SCIENCE", href: "#science", icon: FlaskConical },
+  { label: "MEMBERSHIP", href: "#pricing", icon: Sparkles },
 ];
 
-/* ── Sidebar drawer ──────────────────────────────────────────────────── */
+/* ── Sidebar drawer with "Scientific Atelier" aesthetic ──────────────── */
 function Sidebar({
   open,
   onClose,
@@ -56,10 +44,16 @@ function Sidebar({
   currentUser: any;
 }) {
   const { cartCount } = useCart();
+  const [activeLink, setActiveLink] = useState("/");
+
   // Lock body scroll when open
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
+      // Set active link based on current path
+      if (typeof window !== "undefined") {
+        setActiveLink(window.location.pathname);
+      }
     } else {
       document.body.style.overflow = "";
     }
@@ -72,55 +66,75 @@ function Sidebar({
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop with blur */}
           <motion.div
             key="sidebar-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.3 }}
             onClick={onClose}
             style={{
               position: "fixed",
               inset: 0,
               zIndex: 998,
-              background: "rgba(13,59,68,0.45)",
-              backdropFilter: "blur(4px)",
-              WebkitBackdropFilter: "blur(4px)",
+              background: "rgba(13,59,68,0.6)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
             }}
           />
 
-          {/* Drawer */}
+          {/* Drawer with clip-path animation */}
           <motion.aside
             key="sidebar-drawer"
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", stiffness: 320, damping: 34 }}
+            initial={{ clipPath: "inset(0 100% 0 0)" }}
+            animate={{ clipPath: "inset(0 0 0 0)" }}
+            exit={{ clipPath: "inset(0 100% 0 0)" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30, duration: 0.5 }}
             style={{
               position: "fixed",
               top: 0,
               left: 0,
               bottom: 0,
-              width: "300px",
+              width: "320px",
               maxWidth: "85vw",
               zIndex: 999,
               background: "#0D3B44",
-              borderRight: "1px solid rgba(42,157,143,0.2)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              borderRight: "0.5px solid rgba(255,255,255,0.15)",
               display: "flex",
               flexDirection: "column",
               overflowY: "auto",
-              boxShadow: "8px 0 40px rgba(13,59,68,0.35)",
+              boxShadow: "12px 0 48px rgba(13,59,68,0.4)",
             }}
           >
-            {/* Header */}
+            {/* Grain Texture Overlay */}
             <div
               style={{
+                position: "absolute",
+                inset: 0,
+                pointerEvents: "none",
+                opacity: 0.25,
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+                backgroundRepeat: "repeat",
+                mixBlendMode: "overlay",
+              }}
+            />
+
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+              style={{
+                position: "relative",
+                zIndex: 10,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "1.25rem 1.5rem",
-                borderBottom: "1px solid rgba(255,255,255,0.08)",
+                padding: "1.5rem 1.75rem",
+                borderBottom: "1px solid rgba(255,255,255,0.1)",
               }}
             >
               <Link
@@ -129,31 +143,34 @@ function Sidebar({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "10px",
+                  gap: "12px",
                   textDecoration: "none",
                 }}
               >
-                <div
+                <motion.div
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
                   style={{
-                    width: "34px",
-                    height: "34px",
+                    width: "38px",
+                    height: "38px",
                     borderRadius: "50%",
                     background: "linear-gradient(135deg,#0D3B44,#2A9D8F)",
-                    border: "1.5px solid rgba(212,175,55,0.4)",
+                    border: "1.5px solid rgba(212,175,55,0.5)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     flexShrink: 0,
                   }}
                 >
-                  <Leaf size={15} color="#D4AF37" />
-                </div>
+                  <Leaf size={16} color="#D4AF37" />
+                </motion.div>
                 <span
                   style={{
                     fontFamily: "'Playfair Display', Georgia, serif",
                     fontWeight: 700,
-                    fontSize: "1.15rem",
+                    fontSize: "1.2rem",
                     color: "#F4F7F5",
+                    letterSpacing: "0.02em",
                   }}
                 >
                   Follicia
@@ -161,159 +178,246 @@ function Sidebar({
               </Link>
 
               <motion.button
-                whileTap={{ scale: 0.92 }}
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={onClose}
                 aria-label="Close sidebar"
                 style={{
-                  width: "34px",
-                  height: "34px",
+                  width: "36px",
+                  height: "36px",
                   borderRadius: "50%",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "rgba(255,255,255,0.06)",
-                  color: "rgba(244,247,245,0.7)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  background: "rgba(255,255,255,0.08)",
+                  color: "rgba(244,247,245,0.8)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
+                  transition: "all 0.3s ease",
                 }}
               >
-                <X size={16} />
+                <X size={18} />
               </motion.button>
-            </div>
+            </motion.div>
 
-            {/* Nav links */}
-            <nav style={{ padding: "1rem 0", flex: 1 }}>
-              {SIDEBAR_LINKS.map((link, i) => (
-                <motion.a
-                  key={link.label}
-                  href={link.href}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 + i * 0.04, duration: 0.3 }}
-                  onClick={onClose}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "0.85rem 1.5rem",
-                    color: "rgba(244,247,245,0.75)",
-                    textDecoration: "none",
-                    fontFamily: "'Montserrat', sans-serif",
-                    fontWeight: 500,
-                    fontSize: "0.92rem",
-                    borderRadius: 0,
-                    transition: "background 0.18s ease, color 0.18s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLAnchorElement).style.background =
-                      "rgba(42,157,143,0.1)";
-                    (e.currentTarget as HTMLAnchorElement).style.color =
-                      "#F4F7F5";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLAnchorElement).style.background =
-                      "transparent";
-                    (e.currentTarget as HTMLAnchorElement).style.color =
-                      "rgba(244,247,245,0.75)";
-                  }}
-                >
-                  <span style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <span style={{ opacity: 0.7 }}>{link.icon}</span>
-                    {link.label}
-                  </span>
-                  <ChevronRight size={14} style={{ opacity: 0.35 }} />
-                </motion.a>
-              ))}
-            </nav>
-
-            {/* Bottom actions */}
-            <div
+            {/* Nav links with staggered animation */}
+            <nav
               style={{
-                padding: "1.25rem 1.5rem",
-                borderTop: "1px solid rgba(255,255,255,0.08)",
-                display: "flex",
-                flexDirection: "column",
-                gap: "10px",
+                position: "relative",
+                zIndex: 10,
+                padding: "2rem 0",
+                flex: 1,
               }}
             >
-              {/* Cart */}
-              <Link href="/cart" onClick={onClose}>
-                <button
+              {SIDEBAR_LINKS.map((link, i) => {
+                const isActive = activeLink === link.href;
+                const Icon = link.icon;
+
+                return (
+                  <motion.div
+                    key={link.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      delay: 0.15 + i * 0.05,
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                    }}
+                  >
+                    <Link
+                      href={link.href}
+                      onClick={onClose}
+                      style={{ textDecoration: "none" }}
+                    >
+                      <motion.div
+                        whileHover={{ x: 10 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        style={{
+                          position: "relative",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "16px",
+                          padding: "1rem 1.75rem",
+                          color: isActive ? "#F4F7F5" : "rgba(244,247,245,0.7)",
+                          fontFamily: "'Inter', sans-serif",
+                          fontWeight: 600,
+                          fontSize: "14px",
+                          letterSpacing: "0.1em",
+                          textTransform: "uppercase",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {/* Active indicator dot */}
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeIndicator"
+                            style={{
+                              position: "absolute",
+                              left: "1.75rem",
+                              width: "4px",
+                              height: "4px",
+                              borderRadius: "50%",
+                              background: "#2A9D8F",
+                              boxShadow: `0 0 12px #2A9D8F`,
+                            }}
+                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                          />
+                        )}
+
+                        {/* Icon with glow on hover */}
+                        <motion.div
+                          whileHover={{
+                            filter: `drop-shadow(0 0 8px #2A9D8F)`,
+                          }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            marginLeft: isActive ? "12px" : "0",
+                          }}
+                        >
+                          <Icon size={18} />
+                        </motion.div>
+
+                        <span>{link.label}</span>
+                      </motion.div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </nav>
+
+            {/* Bottom actions stack */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+              style={{
+                position: "relative",
+                zIndex: 10,
+                padding: "1.5rem 1.75rem",
+                borderTop: "1px solid rgba(255,255,255,0.1)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}
+            >
+              {/* Take the Hair Quiz - with pulse animation */}
+              <Link href="/quiz" onClick={onClose} style={{ textDecoration: "none" }}>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   style={{
                     width: "100%",
-                    padding: "0.7rem",
+                    padding: "0.85rem",
                     borderRadius: "9999px",
-                    border: "1.5px solid rgba(42,157,143,0.4)",
-                    background: "transparent",
-                    color: "#2A9D8F",
-                    fontFamily: "'Montserrat', sans-serif",
+                    background: "#2A9D8F",
+                    border: "none",
+                    color: "#FFFFFF",
+                    fontFamily: "'Inter', sans-serif",
                     fontWeight: 600,
-                    fontSize: "0.85rem",
+                    fontSize: "0.9rem",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: "8px",
+                    gap: "10px",
+                    boxShadow: "0 4px 16px rgba(42,157,143,0.3)",
                   }}
                 >
-                  <ShoppingBag size={15} />
-                  Cart{" "}
-                  {cartCount > 0 && (
-                    <span
-                      style={{
-                        background: "#D4AF37",
-                        color: "#0D3B44",
-                        borderRadius: "9999px",
-                        padding: "0 6px",
-                        fontSize: "0.65rem",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {cartCount}
-                    </span>
-                  )}
-                </button>
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      rotate: [0, 180, 360],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <Sparkles size={16} />
+                  </motion.div>
+                  Take the Hair Quiz
+                </motion.button>
               </Link>
 
-              {/* Login / Dashboard */}
+              {/* User Profile Card - with gold border */}
               {dbUser || currentUser ? (
-                <Link href="/dashboard" onClick={onClose} style={{ textDecoration: 'none' }}>
-                  <button
+                <Link
+                  href="/dashboard"
+                  onClick={onClose}
+                  style={{ textDecoration: "none" }}
+                >
+                  <motion.button
+                    whileHover={{ scale: 1.02, borderColor: "#D4AF37" }}
+                    whileTap={{ scale: 0.98 }}
                     style={{
                       width: "100%",
-                      padding: "0.7rem",
+                      padding: "0.85rem",
                       borderRadius: "9999px",
-                      border: "1.5px solid rgba(212,175,55,0.5)",
-                      background: "rgba(212,175,55,0.08)",
+                      border: "1.5px solid rgba(212,175,55,0.6)",
+                      background: "rgba(212,175,55,0.1)",
                       color: "#D4AF37",
-                      fontFamily: "'Montserrat', sans-serif",
+                      fontFamily: "'Inter', sans-serif",
                       fontWeight: 600,
-                      fontSize: "0.85rem",
+                      fontSize: "0.9rem",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: "8px",
+                      gap: "10px",
+                      transition: "all 0.3s ease",
                     }}
                   >
-                    <User size={15} />
+                    <User size={16} />
                     {dbUser?.name || "Dashboard"}
-                  </button>
+                  </motion.button>
                 </Link>
               ) : (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02, borderColor: "#D4AF37" }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     onClose();
                     onLoginClick();
                   }}
                   style={{
                     width: "100%",
-                    padding: "0.7rem",
+                    padding: "0.85rem",
                     borderRadius: "9999px",
-                    border: "1.5px solid rgba(212,175,55,0.5)",
-                    background: "rgba(212,175,55,0.08)",
+                    border: "1.5px solid rgba(212,175,55,0.6)",
+                    background: "rgba(212,175,55,0.1)",
                     color: "#D4AF37",
-                    fontFamily: "'Montserrat', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
+                    fontSize: "0.9rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  <User size={16} />
+                  Login / Sign Up
+                </motion.button>
+              )}
+
+              {/* Cart - shrunk for symmetry */}
+              <Link href="/cart" onClick={onClose} style={{ textDecoration: "none" }}>
+                <motion.button
+                  whileHover={{ scale: 1.02, borderColor: "#2A9D8F" }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    borderRadius: "9999px",
+                    border: "1.5px solid rgba(42,157,143,0.4)",
+                    background: "transparent",
+                    color: "#2A9D8F",
+                    fontFamily: "'Inter', sans-serif",
                     fontWeight: 600,
                     fontSize: "0.85rem",
                     cursor: "pointer",
@@ -321,29 +425,30 @@ function Sidebar({
                     alignItems: "center",
                     justifyContent: "center",
                     gap: "8px",
+                    transition: "all 0.3s ease",
                   }}
                 >
-                  <User size={15} />
-                  Login / Sign Up
-                </button>
-              )}
-
-              {/* Take quiz */}
-              <Link href="/quiz" onClick={onClose} style={{ textDecoration: 'none' }}>
-                <button
-                  className="btn-teal"
-                  style={{
-                    width: "100%",
-                    justifyContent: "center",
-                    fontSize: "0.88rem",
-                    background: "#2A9D8F",
-                  }}
-                >
-                  <Sparkles size={14} />
-                  Take the Hair Quiz
-                </button>
+                  <ShoppingBag size={15} />
+                  Cart
+                  {cartCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      style={{
+                        background: "#D4AF37",
+                        color: "#0D3B44",
+                        borderRadius: "9999px",
+                        padding: "2px 7px",
+                        fontSize: "0.7rem",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {cartCount}
+                    </motion.span>
+                  )}
+                </motion.button>
               </Link>
-            </div>
+            </motion.div>
           </motion.aside>
         </>
       )}

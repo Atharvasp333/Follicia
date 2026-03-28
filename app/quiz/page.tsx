@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ChevronRight, FlaskConical, Beaker, Check } from 'lucide-react';
+import { ChevronRight, FlaskConical, Sparkles, Check, ChevronLeft } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { auth } from '@/lib/firebase';
 
@@ -21,7 +21,7 @@ const STEPS = [
   { id: 'texture', title: 'Strand Architecture', phase: '01' },
   { id: 'porosity', title: 'Scalp & Porosity', phase: '02' },
   { id: 'history', title: 'Chemical History', phase: '03' },
-  { id: 'notes', title: 'Clinical Notes', phase: '04' },
+  { id: 'notes', title: 'Synthesis', phase: '04' },
 ];
 
 const TEXTURE_OPTIONS = [
@@ -35,14 +35,14 @@ const POROSITY_OPTIONS = [
   {
     id: 'high-porosity',
     label: 'High Porosity',
-    description: 'Cuticles are raised or damaged, allowing moisture to enter quickly but escape just as fast. Requires lipid-rich sealing agents.',
-    image: '/quiz/porosity_high.png',
+    description: 'Cuticles are raised or damaged, allowing moisture to enter quickly but escape just as fast.',
+    fact: 'Cuticle alignment is 92% compatible',
   },
   {
     id: 'low-porosity',
     label: 'Balanced / Low',
-    description: 'Tightly bound cuticles that resist moisture penetration. Requires heat-activated hydration or humectants with low molecular weight.',
-    image: '/quiz/porosity_low.png',
+    description: 'Tightly bound cuticles that resist moisture penetration.',
+    fact: 'Cuticle alignment is 98% compatible',
   },
 ];
 
@@ -51,13 +51,13 @@ const CHEMICAL_OPTIONS = [
     id: 'bleach',
     label: 'Bleach / Lightening',
     description: 'High-lift strands or double-process history',
-    image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=800&auto=format&fit=crop'
+    image: '/quiz/straight.png',
   },
   {
     id: 'virgin',
     label: 'Virgin',
     description: 'No oxidative color or chemical alterations',
-    image: '/quiz/virgin.png'
+    image: '/quiz/wavy.png',
   },
 ];
 
@@ -66,6 +66,7 @@ export default function QuizPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   const [quizResults, setQuizResults] = useState<QuizData>({
     texture: null,
@@ -121,337 +122,477 @@ export default function QuizPage() {
     }
   };
 
-  if (!isMounted) return <div className="h-screen w-full bg-white" />;
+  if (!isMounted) return <div className="h-screen w-full bg-[#FAFCFB]" />;
 
-  /* ── Loading Overlay ── */
+  /* ── Full-Screen Analyzing Overlay ── */
   if (isAnalyzing) {
     return (
-      <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8 overflow-hidden">
-        <div className="relative w-80 h-80 flex items-center justify-center">
+      <div className="fixed inset-0 z-[100] bg-[#FAFCFB] flex flex-col items-center justify-center overflow-hidden">
+        {/* Dot Matrix Background */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: 'radial-gradient(#2A9D8F 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        />
+
+        {/* Animated Progress Ring */}
+        <div className="relative w-96 h-96 flex items-center justify-center mb-12">
           <motion.div
-            className="absolute inset-0 bg-brand-teal/5 rounded-full blur-[60px]"
-            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 3, repeat: Infinity }}
-          />
-          <motion.div
-            className="w-48 h-48 rounded-full border border-brand-teal/20 flex items-center justify-center relative overflow-hidden"
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute inset-0"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
           >
-            <div className="absolute inset-0 bg-gradient-to-tr from-[#E0F2F1] via-white to-[#B2DFDB] opacity-50" />
-            <div className="relative z-10 w-32 h-32 rounded-full shadow-[0_0_40px_rgba(42,157,143,0.3)] bg-gradient-radial from-white to-[#E0F2F1] flex items-center justify-center">
-              <FlaskConical className="w-12 h-12 text-brand-teal/40" />
-            </div>
+            <svg className="w-full h-full" viewBox="0 0 100 100">
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                fill="none"
+                stroke="#2A9D8F"
+                strokeWidth="0.5"
+                strokeDasharray="4 4"
+                opacity="0.3"
+              />
+            </svg>
+          </motion.div>
+
+          <motion.div
+            className="relative z-10 w-64 h-64 rounded-full flex items-center justify-center"
+            style={{
+              background: 'radial-gradient(circle, rgba(42,157,143,0.1) 0%, transparent 70%)',
+            }}
+            animate={{
+              scale: [1, 1.05, 1],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          >
+            <FlaskConical className="w-20 h-20 text-[#2A9D8F]" strokeWidth={1.5} />
           </motion.div>
         </div>
-        <div className="mt-12 text-center">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="font-display text-3xl italic text-[#0D3B44] mb-3"
+
+        {/* Text */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-center"
+        >
+          <h2
+            className="font-display text-4xl italic text-[#0D3B44] mb-4"
+            style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            Sequencing DNA...
-          </motion.h2>
-          <p className="font-body text-[#4A6B63] text-sm tracking-widest uppercase">Laboratory Analysis in Progress</p>
-        </div>
+            Analyzing Your DNA...
+          </h2>
+          <p
+            className="text-[#4A6B63] text-sm tracking-[0.3em] uppercase"
+            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
+          >
+            Laboratory Analysis in Progress
+          </p>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-full bg-white flex flex-col overflow-hidden font-sans">
+    <div
+      className="h-screen w-full flex flex-col overflow-hidden"
+      style={{ background: '#FAFCFB' }}
+    >
       <Navbar isFixed={true} />
 
-      <main className="flex-1 flex mt-20 h-full overflow-hidden">
-        {/* LEFT PANEL (55%) */}
-        <div className="w-[55%] h-full flex flex-col px-16 py-12 bg-white relative">
+      {/* Dot Matrix Background */}
+      <div
+        className="fixed inset-0 opacity-[0.02] pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(#2A9D8F 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }}
+      />
 
-          {/* Progress Bar Header */}
-          <div className="mb-12">
-            <div className="flex justify-between items-center mb-6">
-              <span className="font-body text-[10px] font-bold tracking-[0.2em] text-[#2A9D8F] uppercase">Phase {STEPS[activeStep].phase} — Analysis</span>
-              <span className="font-body text-[10px] font-bold tracking-[0.2em] text-[#2A9D8F] uppercase">{progress}% Analyzed</span>
-            </div>
-            <div className="w-full h-[1.5px] bg-[#E8EDEB]">
-              <motion.div
-                className="h-full bg-[#2A9D8F]"
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              />
-            </div>
+      <main className="flex-1 flex flex-col items-center mt-20 px-8 relative z-10 overflow-hidden">
+        {/* Progress Bar Header - Centered */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-3xl mb-6 pt-2"
+        >
+          <div className="flex justify-between items-center mb-3">
+            <span
+              className="text-[10px] font-bold tracking-[0.3em] text-[#2A9D8F] uppercase"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              Phase {STEPS[activeStep].phase} — Analysis
+            </span>
+            <span
+              className="text-[10px] font-bold tracking-[0.3em] text-[#2A9D8F] uppercase"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              {Math.round(progress)}% Analyzed
+            </span>
           </div>
-
-          <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeStep}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.4 }}
-              >
-                <h1 className="font-display text-5xl text-[#0D3B44] mb-4">
-                  {STEPS[activeStep].title}
-                </h1>
-                <p className="font-sans text-[#4A6B63] text-lg mb-12 max-w-xl leading-relaxed">
-                  {activeStep === 0 && "Identify your primary fiber geometry. Our sensors will calibrate based on the cortical alignment of your selection."}
-                  {activeStep === 1 && "Understanding the hair cuticle's structural integrity to determine nutrient absorption velocity."}
-                  {activeStep === 2 && "Identify any prior chemical interventions to ensure formulation compatibility and fiber integrity."}
-                  {activeStep === 3 && "Synthesize final observations to construct the precision hair-health profile."}
-                </p>
-
-                {/* STEP 1 CONTENT: Texture */}
-                {activeStep === 0 && (
-                  <div className="grid grid-cols-2 gap-12 max-w-lg mb-12">
-                    {TEXTURE_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.id}
-                        onClick={() => setQuizResults(prev => ({ ...prev, texture: opt.id }))}
-                        className={`group relative flex flex-col items-center transition-all duration-500`}
-                      >
-                        <div className={`
-                          relative w-44 h-44 rounded-full mb-4 overflow-hidden border-2 transition-all duration-500
-                          ${quizResults.texture === opt.id ? 'border-[#2A9D8F] p-1' : 'border-transparent hover:border-[#E8EDEB]'}
-                        `}>
-                          <div className="relative w-full h-full rounded-full overflow-hidden bg-[#F0F7F6]">
-                            <Image src={opt.image} alt={opt.label} fill className={`object-cover transition-transform duration-700 ${quizResults.texture === opt.id ? 'scale-110' : 'group-hover:scale-105'}`} />
-                            {quizResults.texture === opt.id && (
-                              <div className="absolute inset-0 bg-[#0D3B44]/20 flex items-center justify-center">
-                                <Check className="w-8 h-8 text-white stroke-[3]" />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <p className={`font-body text-[11px] font-bold tracking-[0.2em] transition-colors ${quizResults.texture === opt.id ? 'text-[#0D3B44]' : 'text-[#9AABA5]'}`}>
-                          {opt.index} {opt.label}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* STEP 2 CONTENT: Porosity */}
-                {activeStep === 1 && (
-                  <div className="space-y-6 max-w-xl mb-12">
-                    {POROSITY_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.id}
-                        onClick={() => setQuizResults(prev => ({ ...prev, porosity: opt.id }))}
-                        className={`
-                          w-full flex items-stretch text-left rounded-3xl overflow-hidden border-2 transition-all duration-500
-                          ${quizResults.porosity === opt.id ? 'border-[#2A9D8F] bg-[#F0F7F6]/30' : 'border-[#E8EDEB] hover:border-[#CBD5D1] bg-white'}
-                        `}
-                      >
-                        <div className="w-1/3 min-h-[160px] relative">
-                          <Image src={opt.image} alt={opt.label} fill className="object-cover" />
-                          <div className="absolute inset-0 bg-black/10" />
-                        </div>
-                        <div className="flex-1 p-8 flex flex-col justify-center">
-                          <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-display text-2xl text-[#0D3B44]">{opt.label}</h3>
-                            {quizResults.porosity === opt.id && <Check className="w-4 h-4 text-[#2A9D8F]" />}
-                          </div>
-                          <p className="font-sans text-[#4A6B63] text-xs leading-relaxed pr-8">{opt.description}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* STEP 3 CONTENT: Chemical History */}
-                {activeStep === 2 && (
-                  <div className="space-y-6 max-w-xl mb-12">
-                    {CHEMICAL_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.id}
-                        onClick={() => {
-                          const newHistory = quizResults.chemicalHistory.includes(opt.id)
-                            ? quizResults.chemicalHistory.filter(h => h !== opt.id)
-                            : [...quizResults.chemicalHistory, opt.id];
-                          setQuizResults(prev => ({ ...prev, chemicalHistory: newHistory }));
-                        }}
-                        className={`
-                          w-full flex items-stretch text-left rounded-3xl overflow-hidden border-2 transition-all duration-500
-                          ${quizResults.chemicalHistory.includes(opt.id) ? 'border-[#2A9D8F] bg-[#F0F7F6]/30' : 'border-[#E8EDEB] hover:border-[#CBD5D1] bg-white'}
-                        `}
-                      >
-                        <div className="w-1/3 min-h-[160px] relative">
-                          <Image src={opt.image} alt={opt.label} fill className="object-cover" />
-                        </div>
-                        <div className="flex-1 p-8 flex flex-col justify-center">
-                          <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-display text-2xl text-[#0D3B44]">{opt.label}</h3>
-                            {quizResults.chemicalHistory.includes(opt.id) && <Check className="w-4 h-4 text-[#2A9D8F]" />}
-                          </div>
-                          <p className="font-sans text-[#4A6B63] text-xs leading-relaxed">{opt.description}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* STEP 4 CONTENT: Clinical Notes */}
-                {activeStep === 3 && (
-                  <div className="max-w-xl mb-12">
-                    <div className="relative group">
-                      <div className="absolute -top-3 left-6 px-3 bg-white z-10">
-                        <span className="font-body text-[10px] font-bold tracking-[0.2em] text-[#9AABA5] uppercase">Patient Clinical Notes</span>
-                      </div>
-                      <div className="relative rounded-3xl border border-[#E8EDEB] bg-white overflow-hidden p-8 transition-all duration-500 group-focus-within:border-[#2A9D8F] group-focus-within:ring-4 group-focus-within:ring-[#2A9D8F]/5">
-                        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#0D3B44 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-                        <textarea
-                          value={quizResults.clinicalNotes}
-                          onChange={(e) => setQuizResults(prev => ({ ...prev, clinicalNotes: e.target.value }))}
-                          placeholder="Begin clinical entry... (e.g., Follicular miniaturization noted in vertex; scalp barrier integrity weakened...)"
-                          className="w-full h-80 bg-transparent border-none outline-none font-sans text-sm text-[#0D3B44] leading-loose placeholder:text-[#CBD5D1] relative z-10 resize-none"
-                        />
-                      </div>
-                      <div className="flex justify-between items-center mt-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[#F0F7F6] flex items-center justify-center"><Check className="w-4 h-4 text-[#2A9D8F]" /></div>
-                          <div className="text-left">
-                            <p className="font-body text-[8px] font-bold text-[#9AABA5] uppercase tracking-tighter">Practitioner</p>
-                            <p className="font-body text-[11px] font-bold text-[#1C2B28]">Dr. Alistair Vance</p>
-                          </div>
-                        </div>
-                        <p className="font-sans text-[10px] font-bold text-[#9AABA5] tabular-nums">{quizResults.clinicalNotes.length} chars documented</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
+          <div className="w-full h-[2px] bg-[#E8EDEB] rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-[#2A9D8F]"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            />
           </div>
+        </motion.div>
 
-          {/* Navigation Controls */}
-          <div className="flex items-center gap-6 mt-8">
-            {activeStep > 0 && (
-              <button onClick={handleBack} className="w-32 py-5 rounded-full border border-[#E8EDEB] text-[#0D3B44] font-body font-bold text-[11px] tracking-[.2em] uppercase hover:bg-[#F4F7F5] transition-colors">Previous</button>
-            )}
-            {activeStep < STEPS.length - 1 ? (
-              <button onClick={handleNext} disabled={activeStep === 0 ? !quizResults.texture : activeStep === 1 ? !quizResults.porosity : false} className={`flex-1 py-5 rounded-full bg-[#0D3B44] text-white font-body font-bold text-[11px] tracking-[.2em] uppercase flex items-center justify-center gap-3 transition-all duration-300 ${(activeStep === 0 && !quizResults.texture) || (activeStep === 1 && !quizResults.porosity) ? 'opacity-30 cursor-not-allowed' : 'hover:bg-[#1C2B28] hover:translate-x-1 shadow-lg shadow-[#0D3B44]/10'}`}>
-                {activeStep === 0 ? 'Confirm Geometry' : 'Continue'}
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            ) : (
-              <button onClick={handleSubmit} className="flex-1 py-5 rounded-full bg-[#0D3B44] text-white font-body font-bold text-[11px] tracking-[.2em] uppercase flex items-center justify-center gap-3 hover:bg-[#1C2B28] transition-all duration-300 shadow-xl shadow-[#0D3B44]/20">Generate Scientific Profile</button>
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT PANEL (45%) */}
-        <div className="w-[45%] h-full bg-[#F0F7F6] relative flex flex-col items-center justify-center p-16 overflow-hidden">
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#2A9D8F 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }} />
+        {/* Content Area - Centered, Single Column */}
+        <div className="w-full max-w-4xl flex-1 flex flex-col items-center justify-center overflow-hidden">
           <AnimatePresence mode="wait">
-            <motion.div key={activeStep + (quizResults.texture || '')} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} transition={{ duration: 0.6 }} className="relative w-full max-w-lg aspect-square flex flex-col items-center justify-center">
+            <motion.div
+              key={activeStep}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: -20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30, duration: 0.5 }}
+              className="w-full flex flex-col items-center"
+            >
+              {/* Title */}
+              <h1
+                className="text-3xl text-[#0D3B44] mb-3 text-center"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
+                {STEPS[activeStep].title}
+              </h1>
 
+              {/* Description */}
+              <p
+                className="text-[#4A6B63] text-sm mb-6 max-w-2xl text-center leading-relaxed"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
+                {activeStep === 0 &&
+                  'Identify your primary fiber geometry. Our sensors will calibrate based on the cortical alignment of your selection.'}
+                {activeStep === 1 &&
+                  'Understanding the hair cuticle\'s structural integrity to determine nutrient absorption velocity.'}
+                {activeStep === 2 &&
+                  'Identify any prior chemical interventions to ensure formulation compatibility and fiber integrity.'}
+                {activeStep === 3 &&
+                  'Synthesize final observations to construct the precision hair-health profile.'}
+              </p>
+
+              {/* PHASE 01: Texture - Circular Specimen Cards */}
               {activeStep === 0 && (
-                <div className="w-full flex flex-col items-center">
-                  <div className="relative w-full aspect-square max-w-[400px] mb-12">
-                    <div className="absolute inset-0 bg-white/40 rounded-full blur-3xl" />
-                    <div className="relative w-full h-full rounded-full overflow-hidden border border-white/50 shadow-2xl">
-                      <Image src="https://images.unsplash.com/photo-1599305090598-fe179d501227?q=80&w=800&auto=format&fit=crop" alt="Hair" fill className="object-cover" />
-                      <div className="absolute inset-0 bg-[#0D3B44]/10 mix-blend-multiply" />
-                    </div>
-                  </div>
-                  <div className="w-full space-y-8">
-                    <div className="flex gap-6">
-                      <div className="w-[2px] h-12 bg-[#2A9D8F]/30 shrink-0" />
-                      <div>
-                        <h4 className="font-display text-2xl text-[#0D3B44] mb-2">The Medulla</h4>
-                        <p className="font-sans text-[#4A6B63] text-sm leading-relaxed">{quizResults.texture ? "The innermost core of the hair fiber. Highly variable in presence." : "Awaiting calibration..."}</p>
+                <div className="grid grid-cols-4 gap-6 mb-6">
+                  {TEXTURE_OPTIONS.map((opt, index) => (
+                    <motion.button
+                      key={opt.id}
+                      onClick={() => setQuizResults((prev) => ({ ...prev, texture: opt.id }))}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1, type: 'spring', stiffness: 300, damping: 25 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="group relative flex flex-col items-center"
+                    >
+                      <div
+                        className={`
+                          relative w-32 h-32 rounded-full mb-3 overflow-hidden transition-all duration-500
+                          ${
+                            quizResults.texture === opt.id
+                              ? 'ring-4 ring-[#2A9D8F] shadow-[0_0_30px_rgba(42,157,143,0.4)]'
+                              : 'ring-2 ring-[#E8EDEB] hover:ring-[#CBD5D1]'
+                          }
+                        `}
+                      >
+                        <div className="relative w-full h-full rounded-full overflow-hidden bg-[#F0F7F6]">
+                          <Image
+                            src={opt.image}
+                            alt={opt.label}
+                            fill
+                            className={`object-cover transition-transform duration-700 ${
+                              quizResults.texture === opt.id ? 'scale-110' : 'group-hover:scale-105'
+                            }`}
+                          />
+                          {quizResults.texture === opt.id && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="absolute inset-0 bg-[#2A9D8F]/20 flex items-center justify-center"
+                            >
+                              <Check className="w-8 h-8 text-white stroke-[3]" />
+                            </motion.div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-6">
-                      <div className="w-[2px] h-12 bg-[#2A9D8F]/30 shrink-0" />
-                      <div>
-                        <h4 className="font-display text-2xl text-[#0D3B44] mb-2">The Cortex</h4>
-                        <p className="font-sans text-[#4A6B63] text-sm leading-relaxed">{quizResults.texture ? "Contains long keratin chains that dictate fiber geometry." : "Calibration pending..."}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-12">
-                    <div className="inline-flex items-center px-4 py-2 rounded-full border border-[#CBD5D1] bg-white gap-3">
-                      <div className={`w-2 h-2 rounded-full ${quizResults.texture ? 'bg-[#2A9D8F]' : 'bg-[#9AABA5] animate-pulse'}`} />
-                      <span className="font-body text-[10px] font-bold tracking-[0.1em] text-[#0D3B44] uppercase">
-                        {quizResults.texture
-                          ? `Calibration: ${TEXTURE_OPTIONS.find(o => o.id === quizResults.texture)?.label} ACTIVE`
-                          : 'Awaiting Calibration'
+                      <p
+                        className={`text-[10px] font-bold tracking-[0.2em] transition-colors ${
+                          quizResults.texture === opt.id ? 'text-[#0D3B44]' : 'text-[#9AABA5]'
+                        }`}
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      >
+                        {opt.index} {opt.label}
+                      </p>
+                    </motion.button>
+                  ))}
+                </div>
+              )}
+
+              {/* PHASE 02: Porosity - Large Horizontal Specimen Cards */}
+              {activeStep === 1 && (
+                <div className="w-full max-w-3xl space-y-4 mb-6">
+                  {POROSITY_OPTIONS.map((opt, index) => (
+                    <motion.button
+                      key={opt.id}
+                      onClick={() => setQuizResults((prev) => ({ ...prev, porosity: opt.id }))}
+                      onHoverStart={() => setHoveredCard(opt.id)}
+                      onHoverEnd={() => setHoveredCard(null)}
+                      initial={{ opacity: 0, x: -30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.15, type: 'spring', stiffness: 300, damping: 30 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`
+                        relative w-full p-6 rounded-3xl text-left transition-all duration-500 overflow-hidden
+                        ${
+                          quizResults.porosity === opt.id
+                            ? 'bg-[#F0F7F6] ring-2 ring-[#2A9D8F] shadow-[0_0_40px_rgba(42,157,143,0.3)]'
+                            : 'bg-white ring-1 ring-[#E8EDEB] hover:ring-[#CBD5D1]'
                         }
+                      `}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h3
+                          className="text-2xl text-[#0D3B44]"
+                          style={{ fontFamily: "'Playfair Display', serif" }}
+                        >
+                          {opt.label}
+                        </h3>
+                        {quizResults.porosity === opt.id && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                          >
+                            <Check className="w-5 h-5 text-[#2A9D8F]" />
+                          </motion.div>
+                        )}
+                      </div>
+                      <p
+                        className="text-[#4A6B63] text-xs leading-relaxed mb-3"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      >
+                        {opt.description}
+                      </p>
+
+                      {/* Molecular Fact Tooltip */}
+                      <AnimatePresence>
+                        {hoveredCard === opt.id && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className="flex items-center gap-2 mt-4 px-4 py-2 bg-[#2A9D8F]/10 rounded-full w-fit"
+                          >
+                            <Sparkles className="w-3 h-3 text-[#2A9D8F]" />
+                            <span
+                              className="text-[10px] font-bold text-[#2A9D8F] tracking-wider"
+                              style={{ fontFamily: "'Inter', sans-serif" }}
+                            >
+                              {opt.fact}
+                            </span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.button>
+                  ))}
+                </div>
+              )}
+
+              {/* PHASE 03: Chemical History - 2x2 Grid with Circular Images */}
+              {activeStep === 2 && (
+                <div className="grid grid-cols-2 gap-6 mb-6 max-w-2xl">
+                  {CHEMICAL_OPTIONS.map((opt, index) => (
+                    <motion.button
+                      key={opt.id}
+                      onClick={() => {
+                        const newHistory = quizResults.chemicalHistory.includes(opt.id)
+                          ? quizResults.chemicalHistory.filter((h) => h !== opt.id)
+                          : [...quizResults.chemicalHistory, opt.id];
+                        setQuizResults((prev) => ({ ...prev, chemicalHistory: newHistory }));
+                      }}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.15, type: 'spring', stiffness: 300, damping: 25 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="group relative flex flex-col items-center"
+                    >
+                      <div
+                        className={`
+                          relative w-36 h-36 rounded-full mb-3 overflow-hidden transition-all duration-500
+                          ${
+                            quizResults.chemicalHistory.includes(opt.id)
+                              ? 'ring-4 ring-[#2A9D8F] shadow-[0_0_30px_rgba(42,157,143,0.4)]'
+                              : 'ring-2 ring-[#E8EDEB] hover:ring-[#CBD5D1]'
+                          }
+                        `}
+                      >
+                        <div className="relative w-full h-full rounded-full overflow-hidden bg-[#F0F7F6]">
+                          <Image
+                            src={opt.image}
+                            alt={opt.label}
+                            fill
+                            className={`object-cover transition-transform duration-700 ${
+                              quizResults.chemicalHistory.includes(opt.id)
+                                ? 'scale-110'
+                                : 'group-hover:scale-105'
+                            }`}
+                          />
+                          {quizResults.chemicalHistory.includes(opt.id) && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="absolute inset-0 bg-[#2A9D8F]/20 flex items-center justify-center"
+                            >
+                              <Check className="w-8 h-8 text-white stroke-[3]" />
+                            </motion.div>
+                          )}
+                        </div>
+                      </div>
+                      <h3
+                        className="text-lg text-[#0D3B44] mb-1"
+                        style={{ fontFamily: "'Playfair Display', serif" }}
+                      >
+                        {opt.label}
+                      </h3>
+                      <p
+                        className="text-[#4A6B63] text-xs text-center max-w-[180px]"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      >
+                        {opt.description}
+                      </p>
+                    </motion.button>
+                  ))}
+                </div>
+              )}
+
+              {/* PHASE 04: Synthesis - Centered Input */}
+              {activeStep === 3 && (
+                <div className="w-full max-w-2xl mb-6">
+                  {/* Clinical Notes Input */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="relative"
+                  >
+                    <div className="absolute -top-3 left-6 px-3 bg-[#FAFCFB] z-10">
+                      <span
+                        className="text-[10px] font-bold tracking-[0.2em] text-[#9AABA5] uppercase"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      >
+                        Patient Clinical Notes
                       </span>
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {activeStep === 1 && (
-                <div className="w-full flex flex-col items-center">
-                  <div className="text-left w-full mb-12">
-                    <p className="font-body text-[10px] font-bold tracking-[0.2em] text-[#9AABA5] uppercase">Molecular Structure</p>
-                    <p className="font-sans text-xs text-[#0D3B44]">H₂0 + Lipophilic Complex</p>
-                  </div>
-                  <div className="relative w-80 h-80 mb-12 flex items-center justify-center">
-                    <motion.div className="absolute inset-0 bg-white/40 rounded-full blur-2xl" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 5, repeat: Infinity }} />
-                    <motion.div className="relative w-64 h-64 rounded-full shadow-2xl bg-gradient-to-br from-[#E0F2F1] via-white to-[#B2DFDB] border border-white/80 overflow-hidden flex items-center justify-center" animate={{ scale: [1, 1.03, 1] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>
-                      <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'radial-gradient(circle, #2A9D8F 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
-                      <div className="relative z-10 w-24 h-24 rounded-full border border-white/40 bg-white/30 backdrop-blur-md flex items-center justify-center">
-                        <motion.div className="w-16 h-16 rounded-full bg-brand-teal/10" animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }} transition={{ duration: 3, repeat: Infinity }} />
+                    <div className="relative rounded-3xl ring-1 ring-[#E8EDEB] bg-white overflow-hidden p-6 transition-all duration-500 focus-within:ring-2 focus-within:ring-[#2A9D8F] focus-within:shadow-[0_0_30px_rgba(42,157,143,0.2)]">
+                      <textarea
+                        value={quizResults.clinicalNotes}
+                        onChange={(e) =>
+                          setQuizResults((prev) => ({ ...prev, clinicalNotes: e.target.value }))
+                        }
+                        placeholder="Begin clinical entry... (e.g., Follicular miniaturization noted in vertex; scalp barrier integrity weakened...)"
+                        className="w-full h-40 bg-transparent border-none outline-none text-sm text-[#0D3B44] leading-loose placeholder:text-[#CBD5D1] resize-none"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center mt-3 px-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-[#F0F7F6] flex items-center justify-center">
+                          <Check className="w-3 h-3 text-[#2A9D8F]" />
+                        </div>
+                        <div className="text-left">
+                          <p
+                            className="text-[8px] font-bold text-[#9AABA5] uppercase tracking-wider"
+                            style={{ fontFamily: "'Inter', sans-serif" }}
+                          >
+                            Practitioner
+                          </p>
+                          <p
+                            className="text-[10px] font-bold text-[#1C2B28]"
+                            style={{ fontFamily: "'Inter', sans-serif" }}
+                          >
+                            Dr. Alistair Vance
+                          </p>
+                        </div>
                       </div>
-                    </motion.div>
-                  </div>
-                  <div className="w-full grid grid-cols-2 gap-8 border-t border-[#CBD5D1] pt-4">
-                    <div>
-                      <p className="font-body text-[9px] font-bold text-[#9AABA5] uppercase">Ref. ID</p>
-                      <p className="font-sans text-xs font-bold text-[#1C2B28]">SC-992/PX</p>
+                      <p
+                        className="text-[9px] font-bold text-[#9AABA5] tabular-nums"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      >
+                        {quizResults.clinicalNotes.length} chars documented
+                      </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-body text-[9px] font-bold text-[#2A9D8F] uppercase">Accuracy</p>
-                      <p className="font-sans text-xs font-bold text-[#1C2B28]">98.2%</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeStep === 2 && (
-                <div className="relative w-full max-w-sm aspect-[3/4] rounded-[40px] overflow-hidden shadow-2xl">
-                  <Image src="https://images.unsplash.com/photo-1579154204601-01588f351e67?q=80&w=800&auto=format&fit=crop" alt="Lab" fill className="object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0D3B44]/80 to-transparent" />
-                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="absolute bottom-8 left-8 right-8 bg-white/95 p-8 rounded-3xl">
-                    <Beaker className="w-6 h-6 text-[#2A9D8F] mb-4" />
-                    <h4 className="font-display text-2xl text-[#0D3B44] mb-2">Lab Report 29-C</h4>
-                    <p className="font-sans text-[#4A6B63] text-xs leading-relaxed">Chemical history directly dictates molecular permeability for the final formulation.</p>
                   </motion.div>
                 </div>
               )}
-
-              {activeStep === 3 && (
-                <div className="w-full flex flex-col items-center">
-                  <div className="relative w-72 h-96 rounded-[50px] overflow-hidden shadow-2xl mb-12">
-                    <Image src="/assets/Products/Scalp Serum Concentrate.jpeg" alt="Product" fill className="object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent" />
-                    <div className="absolute bottom-10 left-8 right-8 text-center bg-white/40 backdrop-blur-md p-4 rounded-xl">
-                      <p className="font-display italic text-xs text-[#0D3B44]">"Precision meets aesthetic excellence."</p>
-                    </div>
-                  </div>
-                  <div className="w-full space-y-2">
-                    <div className="flex justify-between font-body text-[10px] uppercase text-[#2A9D8F] tracking-widest font-bold"><span>Accuracy</span><span>98.4%</span></div>
-                    <div className="w-full h-1 bg-[#2A9D8F]/10 rounded-full"><motion.div className="h-full bg-[#2A9D8F]" initial={{ width: 0 }} animate={{ width: '98.4%' }} transition={{ duration: 1.5 }} /></div>
-                  </div>
-                </div>
-              )}
-
             </motion.div>
           </AnimatePresence>
         </div>
-      </main>
 
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #F4F7F5; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5D1; border-radius: 10px; }
-        .bg-gradient-radial { background-image: radial-gradient(var(--tw-gradient-stops)); }
-      `}</style>
+        {/* Navigation Controls - Centered at Bottom */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="w-full max-w-3xl flex items-center gap-3 py-4"
+        >
+          {activeStep > 0 && (
+            <motion.button
+              onClick={handleBack}
+              whileHover={{ scale: 1.02, x: -5 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-6 py-3 rounded-full border-2 border-[#0D3B44] text-[#0D3B44] font-bold text-[10px] tracking-[.2em] uppercase transition-all duration-300 flex items-center gap-2"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </motion.button>
+          )}
+          {activeStep < STEPS.length - 1 ? (
+            <motion.button
+              onClick={handleNext}
+              disabled={
+                (activeStep === 0 && !quizResults.texture) ||
+                (activeStep === 1 && !quizResults.porosity)
+              }
+              whileHover={{ scale: 1.02, x: 5 }}
+              whileTap={{ scale: 0.98 }}
+              className={`flex-1 py-3 rounded-full bg-[#0D3B44] text-white font-bold text-[10px] tracking-[.2em] uppercase flex items-center justify-center gap-2 transition-all duration-300 ${
+                (activeStep === 0 && !quizResults.texture) ||
+                (activeStep === 1 && !quizResults.porosity)
+                  ? 'opacity-30 cursor-not-allowed'
+                  : 'hover:bg-[#1C2B28] shadow-lg shadow-[#0D3B44]/20'
+              }`}
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              Continue
+              <ChevronRight className="w-4 h-4" />
+            </motion.button>
+          ) : (
+            <motion.button
+              onClick={handleSubmit}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 py-3 rounded-full bg-[#0D3B44] text-white font-bold text-[10px] tracking-[.2em] uppercase flex items-center justify-center gap-2 hover:bg-[#1C2B28] transition-all duration-300 shadow-xl shadow-[#0D3B44]/30"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              <Sparkles className="w-4 h-4" />
+              Generate Scientific Profile
+            </motion.button>
+          )}
+        </motion.div>
+      </main>
     </div>
   );
 }
