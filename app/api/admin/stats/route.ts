@@ -119,25 +119,43 @@ export async function GET() {
     });
 
     // Process biological distribution
+    const hairTypeMapping: Record<string, string> = {
+      "1": "Straight",
+      "2": "Wavy",
+      "3": "Curly",
+      "4": "Coily",
+      straight: "Straight",
+      wavy: "Wavy",
+      curly: "Curly",
+      coily: "Coily",
+    };
+
+    const hairTypeDistribution = usersByHairType
+      .filter(u => u.hairType && hairTypeMapping[u.hairType])
+      .map(u => ({
+        name: hairTypeMapping[u.hairType as string],
+        value: u._count.id,
+      }));
+
     const biologicalDistribution = [
       {
         name: "Type 1 (Straight)",
-        value: usersByHairType.find(u => u.hairType === "straight")?._count.id || 0,
+        value: usersByHairType.find(u => u.hairType === "1" || u.hairType === "straight")?._count.id || 0,
         color: "#0D3B44",
       },
       {
         name: "Type 2 (Wavy)",
-        value: usersByHairType.find(u => u.hairType === "wavy")?._count.id || 0,
+        value: usersByHairType.find(u => u.hairType === "2" || u.hairType === "wavy")?._count.id || 0,
         color: "#7DD3C0",
       },
       {
         name: "Type 3 (Curly)",
-        value: usersByHairType.find(u => u.hairType === "curly")?._count.id || 0,
+        value: usersByHairType.find(u => u.hairType === "3" || u.hairType === "curly")?._count.id || 0,
         color: "#9AABA5",
       },
       {
         name: "Type 4 (Coily)",
-        value: usersByHairType.find(u => u.hairType === "coily")?._count.id || 0,
+        value: usersByHairType.find(u => u.hairType === "4" || u.hairType === "coily")?._count.id || 0,
         color: "#2A9D8F",
       },
     ];
@@ -192,6 +210,7 @@ export async function GET() {
         count: criticalStockCount || 0,
       },
       salesVelocity: salesVelocityData,
+      hairTypeDistribution,
       biologicalDistribution: biologicalDistributionWithPercent,
       membershipDistribution: membershipDistributionWithPercent,
       atRiskProducts: atRiskProducts.map(p => {
@@ -218,6 +237,7 @@ export async function GET() {
       orderVolume: 0,
       criticalStock: { count: 0 },
       salesVelocity: [],
+      hairTypeDistribution: [],
       biologicalDistribution: [],
       membershipDistribution: [],
       atRiskProducts: [],

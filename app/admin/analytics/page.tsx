@@ -56,6 +56,7 @@ interface AnalyticsData {
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
   const [dateRange, setDateRange] = useState<"today" | "7" | "30" | "month">("30");
   const [viewMode, setViewMode] = useState<"daily" | "monthly">("daily");
 
@@ -65,7 +66,13 @@ export default function AnalyticsPage() {
 
   const fetchAnalytics = async () => {
     try {
-      setLoading(true);
+      // Show table loading only if we already have data
+      if (data) {
+        setTableLoading(true);
+      } else {
+        setLoading(true);
+      }
+      
       const res = await fetch(`/api/admin/analytics?range=${dateRange}`);
       const analyticsData = await res.json();
       setData(analyticsData);
@@ -73,6 +80,7 @@ export default function AnalyticsPage() {
       console.error("Failed to fetch analytics:", error);
     } finally {
       setLoading(false);
+      setTableLoading(false);
     }
   };
 
@@ -463,12 +471,44 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Product Interaction Funnel Table */}
-      <div style={{ background: "white", borderRadius: "8px", padding: "1rem" }}>
+      <div style={{ background: "white", borderRadius: "8px", padding: "1rem", position: "relative" }}>
+        {/* Loading Overlay */}
+        {tableLoading && (
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(2px)",
+            borderRadius: "8px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10,
+          }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{
+                width: "40px",
+                height: "40px",
+                border: `3px solid ${B.lightGray}`,
+                borderTop: `3px solid ${B.seafoam}`,
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+                margin: "0 auto 0.5rem",
+              }} />
+              <p style={{ fontSize: "0.8rem", color: B.bodyText, fontWeight: 500 }}>
+                Loading timed data...
+              </p>
+            </div>
+          </div>
+        )}
+
         <div style={{ marginBottom: "0.85rem" }}>
           <h3 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "1rem", color: B.darkText, marginBottom: "0.2rem" }}>
             Product Interaction Funnel
           </h3>
-          <p style={{ fontSize: "0.75rem", color: B.bodyText }}>Track user engagement from view to purchase</p>
+          <p style={{ fontSize: "0.75rem", color: B.bodyText }}>
+            Track user engagement from view to purchase • Filtered by selected date range
+          </p>
         </div>
 
         {/* Table */}
@@ -564,6 +604,14 @@ export default function AnalyticsPage() {
           )}
         </div>
       </div>
+
+      {/* CSS for spinner animation */}
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

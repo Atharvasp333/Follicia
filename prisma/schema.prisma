@@ -68,7 +68,7 @@ model Product {
   inventoryCount Int      @default(0)
   lowStockThreshold Int   @default(5)
   isActive       Boolean  @default(true)
-  // Product interaction tracking for analytics
+  // Product interaction tracking for analytics (lifetime totals)
   viewsCount     Int      @default(0)
   addToCartCount Int      @default(0)
   purchaseCount  Int      @default(0)
@@ -78,8 +78,22 @@ model Product {
 
   orderItems     OrderItem[]
   cartItems      CartItem[]
+  events         ProductEvent[]
 
   @@map("products")
+}
+
+// ─── ProductEvent ──────────────────────────────────────────────────────────
+// Event log for time-based product analytics
+model ProductEvent {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type      String   // "VIEW", "CART", "PURCHASE", "CANCEL"
+  createdAt DateTime @default(now())
+
+  @@index([productId, type, createdAt])
+  @@map("product_events")
 }
 
 // ─── Order ─────────────────────────────────────────────────────────────────

@@ -46,6 +46,10 @@ interface DashboardStats {
     count: number;
   };
   salesVelocity: Array<{ date: string; amount: number }>;
+  hairTypeDistribution: Array<{
+    name: string;
+    value: number;
+  }>;
   biologicalDistribution: Array<{
     name: string;
     value: number;
@@ -96,6 +100,45 @@ export default function AdminDashboard() {
   }
 
   const totalBioProfiles = stats.biologicalDistribution.reduce((sum, b) => sum + b.value, 0);
+  
+  // Hair Type Distribution with colors
+  const hairTypeColors: Record<string, string> = {
+    Straight: "#2A9D8F", // Seafoam
+    Wavy: "#E9C46A",     // Sand/Gold
+    Curly: "#F4A261",    // Ochre
+    Coily: "#264653",    // Dark Slate
+  };
+
+  const hairTypeData = stats.hairTypeDistribution.map(item => ({
+    ...item,
+    color: hairTypeColors[item.name] || B.midGray,
+  }));
+
+  const totalHairProfiles = hairTypeData.reduce((sum, item) => sum + item.value, 0);
+
+  // Custom tooltip for donut chart
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div
+          style={{
+            background: B.teal,
+            padding: "0.5rem 0.75rem",
+            borderRadius: "6px",
+            color: "white",
+            fontSize: "0.75rem",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          }}
+        >
+          <p style={{ margin: 0, fontWeight: 600 }}>{payload[0].name}</p>
+          <p style={{ margin: "0.25rem 0 0 0", opacity: 0.9 }}>
+            {payload[0].value} users
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div style={{ padding: "1.5rem", background: B.offWhite, minHeight: "100vh" }}>
@@ -428,59 +471,86 @@ export default function AdminDashboard() {
 
         {/* Right Column: CRM Insights */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-          {/* Biological Distribution */}
+          {/* Hair Type Distribution */}
           <div style={{ background: "white", borderRadius: "8px", padding: "1rem" }}>
             <h3 style={{ fontFamily: "var(--font-playfair), serif", fontSize: "1rem", color: B.darkText, marginBottom: "0.2rem" }}>
-              Biological Distribution
+              Hair Type Distribution
             </h3>
-            <p style={{ fontSize: "0.75rem", color: B.bodyText, marginBottom: "0.85rem" }}>Patient Hair Classification</p>
+            <p style={{ fontSize: "0.75rem", color: B.bodyText, marginBottom: "0.85rem" }}>
+              Based on completed clinical diagnostics
+            </p>
             
-            {totalBioProfiles > 0 ? (
+            {totalHairProfiles > 0 ? (
               <>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: "0.85rem" }}>
-                  <ResponsiveContainer width="100%" height={160}>
+                  <ResponsiveContainer width="100%" height={180}>
                     <PieChart>
                       <Pie
-                        data={stats.biologicalDistribution}
+                        data={hairTypeData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={45}
-                        outerRadius={65}
-                        paddingAngle={2}
+                        innerRadius={50}
+                        outerRadius={75}
+                        paddingAngle={3}
                         dataKey="value"
                       >
-                        {stats.biologicalDistribution.map((entry, index) => (
+                        {hairTypeData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => [`${Number(value)} profiles`, "Count"]} />
+                      <Tooltip content={<CustomTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                  {stats.biologicalDistribution.map((item, index) => (
-                    <div key={index} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: item.color }} />
-                        <span style={{ fontSize: "0.75rem", color: B.bodyText }}>{item.name}</span>
+                  {hairTypeData.map((item, index) => {
+                    const percentage = Math.round((item.value / totalHairProfiles) * 100);
+                    return (
+                      <div key={index} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: item.color }} />
+                          <span style={{ fontSize: "13px", color: B.bodyText, fontFamily: "var(--font-inter), sans-serif" }}>
+                            {item.name}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: "13px", fontWeight: 600, color: B.darkText, fontFamily: "var(--font-inter), sans-serif" }}>
+                          {percentage}% ({item.value})
+                        </span>
                       </div>
-                      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: B.darkText }}>{item.percentage}%</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             ) : (
               <div style={{ 
-                padding: "1.5rem 0.85rem", 
+                padding: "2rem 0.85rem", 
                 textAlign: "center", 
-                background: B.cream, 
+                background: B.lightGray, 
                 borderRadius: "8px",
-                color: B.bodyText,
+                color: B.midGray,
                 fontSize: "0.8rem"
               }}>
-                <div style={{ fontSize: "1.75rem", marginBottom: "0.4rem" }}>🧬</div>
-                Awaiting DNA Submissions
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: "0.85rem" }}>
+                  <ResponsiveContainer width="100%" height={180}>
+                    <PieChart>
+                      <Pie
+                        data={[{ name: "No Data", value: 1 }]}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={75}
+                        dataKey="value"
+                      >
+                        <Cell fill={B.lightGray} />
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <p style={{ margin: 0, fontWeight: 500 }}>Awaiting Diagnostic Data</p>
+                <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.7rem", opacity: 0.7 }}>
+                  No users have completed the quiz yet
+                </p>
               </div>
             )}
           </div>
