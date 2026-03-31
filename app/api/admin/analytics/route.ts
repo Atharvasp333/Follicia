@@ -96,7 +96,7 @@ export async function GET(request: Request) {
     });
 
     // Calculate product-level metrics using ProductEvent for views/cart and OrderItem for actual conversions
-    let topProducts = [];
+    let topProducts: any[] = [];
     
     try {
       // 1. Get Views and Cart events from ProductEvent table (time-filtered)

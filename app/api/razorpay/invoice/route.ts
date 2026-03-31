@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { razorpay } from "@/lib/razorpay";
 import { prisma } from "@/lib/prisma";
+import { awardLoyaltyPoints } from "@/lib/loyalty";
 
 export async function POST(req: NextRequest) {
   try {
@@ -86,14 +87,14 @@ export async function POST(req: NextRequest) {
 
     // Create invoice via Razorpay API
     const invoiceData = {
-      type: "invoice",
+      type: "invoice" as const,
       description: `Follicia Laboratory Statement - Order ${invoiceNumber}`,
       partial_payment: false,
       customer,
       line_items: lineItems,
       currency: "INR",
-      sms_notify: 1, // Enable SMS notification
-      email_notify: 1, // Enable email notification
+      sms_notify: 1 as const, // Enable SMS notification
+      email_notify: 1 as const, // Enable email notification
       draft: "0", // Not a draft, issue immediately
       date: Math.floor(Date.now() / 1000), // Current timestamp
       expire_by: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days expiry
@@ -112,8 +113,8 @@ export async function POST(req: NextRequest) {
 
     console.log("✅ Invoice created successfully:", invoice.id);
 
-    // Update order with invoice details
-    await prisma.order.update({
+    // Update order with invoice details and mark as PAID
+    const updatedOrder = await prisma.order.update({
       where: { id: orderId },
       data: {
         razorpayInvoiceId: invoice.id,
@@ -124,6 +125,24 @@ export async function POST(req: NextRequest) {
     });
 
     console.log("✅ Order updated with invoice details");
+
+    // Award loyalty points for the completed order
+    try {
+      const loyaltyResult = await awardLoyaltyPoints(
+        order.userId,
+        order.id,
+        order.totalAmount
+      );
+      
+      if (loyaltyResult.pointsEarned > 0) {
+        console.log(
+          `🎁 Awarded ${loyaltyResult.pointsEarned} loyalty points (Total: ${loyaltyResult.totalPoints})`
+        );
+      }
+    } catch (loyaltyError) {
+      console.error("⚠️ Failed to award loyalty points (non-critical):", loyaltyError);
+      // Don't fail the invoice generation if loyalty points fail
+    }
 
     return NextResponse.json({
       success: true,

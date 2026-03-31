@@ -19,8 +19,9 @@ import {
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
-import { ShoppingBag, User } from "lucide-react";
+import { ShoppingBag, User, Gift } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import PointsBalance from "@/components/PointsBalance";
 
 const NAV_ITEMS = [
   {
@@ -33,6 +34,12 @@ const NAV_ITEMS = [
     label: "My Hair DNA",
     href: "/dashboard/dna",
     icon: Dna,
+    exact: false,
+  },
+  {
+    label: "Rewards Vault",
+    href: "/dashboard/rewards",
+    icon: Gift,
     exact: false,
   },
   {
@@ -218,6 +225,11 @@ function DashboardSidebar({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Points Balance */}
+      <div style={{ padding: "1rem 0.75rem" }}>
+        <PointsBalance points={dbUser?.loyaltyPoints || 0} compact />
       </div>
 
       {/* Nav */}

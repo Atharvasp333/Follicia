@@ -302,6 +302,48 @@ function Sidebar({
                 gap: "12px",
               }}
             >
+              {/* Loyalty Points Display */}
+              {dbUser && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.45, duration: 0.3 }}
+                  style={{
+                    padding: "0.85rem 1rem",
+                    borderRadius: "12px",
+                    background: "rgba(212,175,55,0.15)",
+                    border: "1px solid rgba(212,175,55,0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Sparkles size={14} color="#D4AF37" />
+                    <span
+                      style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: "0.8rem",
+                        color: "rgba(244,247,245,0.8)",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Loyalty Points
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: "'Montserrat', sans-serif",
+                      fontSize: "1rem",
+                      color: "#D4AF37",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {dbUser.loyaltyPoints || 0}
+                  </span>
+                </motion.div>
+              )}
+
               {/* Take the Hair Quiz - with pulse animation */}
               <Link href="/quiz" onClick={onClose} style={{ textDecoration: "none" }}>
                 <motion.button

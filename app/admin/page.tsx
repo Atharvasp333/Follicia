@@ -42,6 +42,7 @@ interface DashboardStats {
   };
   activeUsers: number;
   orderVolume: number;
+  loyaltyLiabilities: number;
   criticalStock: {
     count: number;
   };
@@ -232,7 +233,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Condensed KPI Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.85rem", marginBottom: "1.25rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "0.85rem", marginBottom: "1.25rem" }}>
         {/* Revenue Insight */}
         <div style={{ background: "white", borderRadius: "8px", padding: "0.85rem", display: "flex", alignItems: "center", gap: "0.85rem" }}>
           <div style={{ 
@@ -301,6 +302,33 @@ export default function AdminDashboard() {
             </div>
             <div style={{ fontFamily: "var(--font-playfair), serif", fontSize: "1.35rem", fontWeight: 600, color: B.darkText }}>
               {stats.orderVolume.toLocaleString()}
+            </div>
+          </div>
+        </div>
+
+        {/* Loyalty Liabilities */}
+        <div style={{ background: "linear-gradient(135deg, rgba(42,157,143,0.12), rgba(42,157,143,0.06))", borderRadius: "8px", padding: "0.85rem", display: "flex", alignItems: "center", gap: "0.85rem", border: "1px solid rgba(42,157,143,0.2)" }}>
+          <div style={{ 
+            width: "36px", 
+            height: "36px", 
+            borderRadius: "8px", 
+            background: "rgba(42,157,143,0.2)", 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center",
+            flexShrink: 0
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={B.seafoam} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "0.65rem", fontWeight: 600, color: B.seafoam, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "0.2rem" }}>
+              Loyalty Pts
+            </div>
+            <div style={{ fontFamily: "var(--font-playfair), serif", fontSize: "1.35rem", fontWeight: 700, color: B.seafoam }}>
+              {stats.loyaltyLiabilities.toLocaleString()}
             </div>
           </div>
         </div>

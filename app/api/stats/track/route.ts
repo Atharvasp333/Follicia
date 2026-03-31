@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       prisma.productEvent.create({
         data: {
           productId,
-          type: eventTypeMap[eventType],
+          type: eventTypeMap[eventType as EventType],
         },
       }),
     ]);

@@ -32,12 +32,16 @@ model User {
   // Membership plan
   plan           String?  // "bronze", "silver", "gold"
   planName       String?  // "Bronze", "Silver", "Gold"
+  // Loyalty Points
+  loyaltyPoints  Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  orders         Order[]
-  cartItems      CartItem[]
-  quizResults    QuizResult[]
+  orders              Order[]
+  cartItems           CartItem[]
+  quizResults         QuizResult[]
+  loyaltyTransactions LoyaltyTransaction[]
+  redeemedCoupons     UserCoupon[]
 
   @@map("users")
 }
@@ -105,6 +109,10 @@ model Order {
   totalAmount           Float
   shippingMethod        String?     // "standard" or "express"
   shippingCost          Float       @default(0)
+  // Coupon/discount tracking
+  couponId              String?
+  coupon                RewardCoupon? @relation(fields: [couponId], references: [id])
+  discountAmount        Float       @default(0)
   // Shipping address
   shippingName          String?
   shippingEmail         String?
@@ -176,6 +184,53 @@ model QuizResult {
   @@map("quiz_results")
 }
 
+// ─── LoyaltyTransaction ────────────────────────────────────────────────────
+// Tracks all loyalty points earned and redeemed by users
+model LoyaltyTransaction {
+  id          String              @id @default(cuid())
+  userId      String
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Int                 // Positive for EARNED, negative for REDEEMED
+  type        LoyaltyTransactionType
+  description String
+  createdAt   DateTime            @default(now())
+
+  @@index([userId, createdAt])
+  @@map("loyalty_transactions")
+}
+
+// ─── RewardCoupon ──────────────────────────────────────────────────────────
+// Redeemable coupons that users can claim with loyalty points
+model RewardCoupon {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  discountAmount Float        // Discount value in currency
+  pointsRequired Int          // Points needed to redeem
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  
+  userCoupons    UserCoupon[]
+  orders         Order[]      // Orders that used this coupon
+
+  @@map("reward_coupons")
+}
+
+// ─── UserCoupon ────────────────────────────────────────────────────────────
+// Join table tracking which coupons users have redeemed
+model UserCoupon {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  couponId  String
+  coupon    RewardCoupon  @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  redeemedAt DateTime     @default(now())
+
+  @@unique([userId, couponId])
+  @@index([userId])
+  @@map("user_coupons")
+}
+
 // ─── Enums ─────────────────────────────────────────────────────────────────
 enum OrderStatus {
   PENDING
@@ -184,4 +239,9 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+enum LoyaltyTransactionType {
+  EARNED
+  REDEEMED
 }

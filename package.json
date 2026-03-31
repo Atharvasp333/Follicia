@@ -9,7 +9,11 @@
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
     "migrate:stats": "tsx scripts/migrate-product-stats.ts",
-    "boost:data": "tsx scripts/boost-conversions.ts"
+    "boost:data": "tsx scripts/boost-conversions.ts",
+    "init:loyalty": "tsx prisma/init-loyalty-points.ts",
+    "seed:coupons": "tsx prisma/seed-reward-coupons.ts",
+    "seed:loyalty-points": "tsx scripts/seed-loyalty-points.ts",
+    "check:points": "tsx scripts/check-user-points.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.39.0",

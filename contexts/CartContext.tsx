@@ -15,6 +15,12 @@ export interface CartItem {
   category?: string | null;
 }
 
+export interface AppliedCoupon {
+  id: string;
+  code: string;
+  discountAmount: number;
+}
+
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => Promise<void>;
@@ -22,8 +28,13 @@ interface CartContextType {
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
   validateStock: () => Promise<{ valid: boolean; outOfStock: string[]; insufficientStock: Array<{ name: string; available: number; requested: number }> }>;
+  applyCoupon: (coupon: AppliedCoupon) => void;
+  removeCoupon: () => void;
+  appliedCoupon: AppliedCoupon | null;
   cartCount: number;
   subtotal: number;
+  discount: number;
+  total: number;
   isLoading: boolean;
 }
 
@@ -34,6 +45,7 @@ const CART_STORAGE_KEY = "follicia_cart";
 export function CartProvider({ children }: { children: ReactNode }) {
   const { currentUser, dbUser, isLoading: authLoading } = useAuthModal();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const hasInitialized = useRef(false); // Track if cart has been initialized
   const isSyncing = useRef(false); // Prevent concurrent syncs
@@ -254,6 +266,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     
     // Clear state
     setCartItems([]);
+    setAppliedCoupon(null);
     
     // Clear localStorage
     if (typeof window !== "undefined") {
@@ -328,6 +341,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const discount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const total = subtotal - discount;
+
+  // Apply coupon
+  const applyCoupon = (coupon: AppliedCoupon) => {
+    console.log("🎫 Applying coupon:", coupon);
+    setAppliedCoupon(coupon);
+    
+    // Show success toast
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('coupon-applied', { 
+        detail: { code: coupon.code, discount: coupon.discountAmount }
+      }));
+    }
+  };
+
+  // Remove coupon
+  const removeCoupon = () => {
+    console.log("🗑️ Removing coupon");
+    setAppliedCoupon(null);
+  };
 
   return (
     <CartContext.Provider
@@ -338,8 +372,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         updateQuantity,
         clearCart,
         validateStock,
+        applyCoupon,
+        removeCoupon,
+        appliedCoupon,
         cartCount,
         subtotal,
+        discount,
+        total,
         isLoading: isLoading || authLoading,
       }}
     >

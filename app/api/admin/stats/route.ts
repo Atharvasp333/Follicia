@@ -17,6 +17,7 @@ export async function GET() {
       revenueData,
       totalUsers,
       successfulOrders,
+      loyaltyLiabilities,
       criticalStockCount,
       orders,
       usersByHairType,
@@ -43,12 +44,17 @@ export async function GET() {
         },
       }),
       
-      // 4. Critical Stock - Products with stock <= 0
+      // 4. Loyalty Liabilities - Sum of all user points
+      prisma.user.aggregate({
+        _sum: { loyaltyPoints: true },
+      }),
+      
+      // 5. Critical Stock - Products with stock <= 0
       prisma.product.count({
         where: { stock: { lte: 0 } },
       }),
       
-      // 5. Sales Velocity - Last 30 days
+      // 6. Sales Velocity - Last 30 days
       prisma.order.findMany({
         where: {
           createdAt: { gte: thirtyDaysAgo },
@@ -57,20 +63,20 @@ export async function GET() {
         select: { createdAt: true, totalAmount: true },
       }),
       
-      // 6. Biological Distribution
+      // 7. Biological Distribution
       prisma.user.groupBy({
         by: ["hairType"],
         _count: { id: true },
         where: { hairType: { not: null } },
       }),
       
-      // 6b. Membership Tier Distribution
+      // 7b. Membership Tier Distribution
       prisma.user.groupBy({
         by: ["plan"],
         _count: { id: true },
       }),
       
-      // 7. At-Risk Inventory
+      // 8. At-Risk Inventory
       prisma.product.findMany({
         where: {
           OR: [
@@ -83,7 +89,7 @@ export async function GET() {
         take: 5,
       }),
       
-      // 8. Top Purchasing Regions
+      // 9. Top Purchasing Regions
       prisma.order.groupBy({
         by: ["shippingCity"],
         _count: { id: true },
@@ -206,6 +212,7 @@ export async function GET() {
       },
       activeUsers: totalUsers || 0,
       orderVolume: successfulOrders || 0,
+      loyaltyLiabilities: loyaltyLiabilities._sum.loyaltyPoints || 0,
       criticalStock: {
         count: criticalStockCount || 0,
       },
@@ -235,6 +242,7 @@ export async function GET() {
       revenue: { total: 0, formatted: "₹0k" },
       activeUsers: 0,
       orderVolume: 0,
+      loyaltyLiabilities: 0,
       criticalStock: { count: 0 },
       salesVelocity: [],
       hairTypeDistribution: [],

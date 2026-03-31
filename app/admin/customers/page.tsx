@@ -25,6 +25,7 @@ interface User {
   tier: Tier;
   plan: string | null;
   planName: string | null;
+  loyaltyPoints: number;
   totalSpend: number;
   totalOrders: number;
   lastOrderDate: string | null;
@@ -205,7 +206,7 @@ export default function UsersPage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "2.5fr 2fr 1fr 1fr",
+            gridTemplateColumns: "2.5fr 2fr 1fr 1fr 0.8fr",
             padding: "0.75rem 1rem",
             background: B.cream,
             fontFamily: "var(--font-inter), sans-serif",
@@ -220,6 +221,7 @@ export default function UsersPage() {
           <div>Contact</div>
           <div>Tier Status</div>
           <div>Total Orders</div>
+          <div>Points</div>
         </div>
 
         {/* Table Rows */}
@@ -230,7 +232,7 @@ export default function UsersPage() {
               onClick={() => setSelectedUser(user)}
               style={{
                 display: "grid",
-                gridTemplateColumns: "2.5fr 2fr 1fr 1fr",
+                gridTemplateColumns: "2.5fr 2fr 1fr 1fr 0.8fr",
                 padding: "0.85rem 1rem",
                 borderBottom: `1px solid ${B.lightGray}`,
                 cursor: "pointer",
@@ -296,6 +298,13 @@ export default function UsersPage() {
               <div style={{ display: "flex", alignItems: "center" }}>
                 <span style={{ fontSize: "0.85rem", fontWeight: 600, color: B.darkText }}>
                   {user.totalOrders}
+                </span>
+              </div>
+
+              {/* Loyalty Points */}
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <span style={{ fontSize: "0.85rem", fontWeight: 700, color: B.seafoam }}>
+                  {user.loyaltyPoints.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -446,7 +455,7 @@ export default function UsersPage() {
             {/* Modal Body */}
             <div style={{ padding: "2rem", maxHeight: "calc(85vh - 200px)", overflowY: "auto" }}>
               {/* Stats Grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "2rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem", marginBottom: "2rem" }}>
                 <div style={{ 
                   background: B.cream, 
                   borderRadius: "10px", 
@@ -472,6 +481,21 @@ export default function UsersPage() {
                   </div>
                   <div style={{ fontFamily: "var(--font-playfair), serif", fontSize: "1.5rem", fontWeight: 600, color: B.seafoam }}>
                     {selectedUser.totalOrders}
+                  </div>
+                </div>
+
+                <div style={{ 
+                  background: "linear-gradient(135deg, rgba(42,157,143,0.15), rgba(42,157,143,0.08))", 
+                  border: "1.5px solid rgba(42,157,143,0.3)",
+                  borderRadius: "10px", 
+                  padding: "1.25rem",
+                  textAlign: "center"
+                }}>
+                  <div style={{ fontSize: "0.7rem", fontWeight: 600, color: B.seafoam, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "0.5rem" }}>
+                    Loyalty Points
+                  </div>
+                  <div style={{ fontFamily: "var(--font-playfair), serif", fontSize: "1.5rem", fontWeight: 700, color: B.seafoam }}>
+                    {selectedUser.loyaltyPoints.toLocaleString()}
                   </div>
                 </div>
 

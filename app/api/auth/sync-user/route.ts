@@ -29,6 +29,7 @@ export async function POST(req: Request) {
         imageUrl: true,
         plan: true,
         planName: true,
+        loyaltyPoints: true,
       },
     });
 
@@ -53,6 +54,7 @@ export async function POST(req: Request) {
           imageUrl: true,
           plan: true,
           planName: true,
+          loyaltyPoints: true,
         },
       });
       console.log('✅ User created:', user.id);

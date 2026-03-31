@@ -17,6 +17,7 @@ interface DbUser {
   imageUrl: string | null;
   plan: string | null;
   planName: string | null;
+  loyaltyPoints: number;
 }
 
 interface AuthModalContextType {

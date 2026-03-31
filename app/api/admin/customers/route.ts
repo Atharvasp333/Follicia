@@ -24,6 +24,7 @@ export async function GET() {
         imageUrl: true,
         plan: true,
         planName: true,
+        loyaltyPoints: true,
         createdAt: true,
         orders: {
           where: {
@@ -61,6 +62,7 @@ export async function GET() {
         tier,
         plan: user.plan,
         planName: user.planName,
+        loyaltyPoints: user.loyaltyPoints || 0,
         totalSpend,
         totalOrders,
         lastOrderDate,

@@ -177,14 +177,16 @@ function OrderSummary({
   items,
   shippingMethod,
   onShippingChange,
+  discount,
 }: {
   items: any[];
   shippingMethod: ShippingMethod;
   onShippingChange: (method: ShippingMethod) => void;
+  discount: number;
 }) {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingCost = shippingMethod === "express" ? 299 : subtotal >= 2999 ? 0 : 199;
-  const total = subtotal + shippingCost;
+  const total = subtotal + shippingCost - discount;
 
   return (
     <div
@@ -374,6 +376,23 @@ function OrderSummary({
             {shippingCost === 0 ? "FREE" : `₹${shippingCost}`}
           </span>
         </div>
+        {discount > 0 && (
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.75rem" }}>
+            <span style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "0.9rem", color: B.seafoam }}>
+              Discount
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--font-montserrat), sans-serif",
+                fontSize: "0.9rem",
+                fontWeight: 600,
+                color: B.seafoam,
+              }}
+            >
+              -₹{discount.toLocaleString("en-IN")}
+            </span>
+          </div>
+        )}
         <div
           style={{
             display: "flex",
@@ -444,7 +463,7 @@ function OrderSummary({
 /* ── Main Checkout Page ──────────────────────────────────── */
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartItems, clearCart, subtotal, validateStock } = useCart();
+  const { cartItems, clearCart, subtotal, validateStock, appliedCoupon, discount } = useCart();
   const { currentUser, dbUser } = useAuthModal();
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>("standard");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -504,7 +523,7 @@ export default function CheckoutPage() {
 
       // Calculate final total
       const shippingCost = shippingMethod === "express" ? 299 : subtotal >= 2999 ? 0 : 199;
-      const total = subtotal + shippingCost;
+      const total = subtotal + shippingCost - discount;
 
       // Step 1: Create order in our database (with server-side validation)
       console.log("📦 Creating order in database...");
@@ -516,6 +535,8 @@ export default function CheckoutPage() {
           totalAmount: total,
           shippingMethod,
           shippingCost,
+          couponId: appliedCoupon?.id || null,
+          discountAmount: discount,
           shippingAddress: {
             fullName: data.fullName,
             email: data.email,
@@ -1124,6 +1145,7 @@ export default function CheckoutPage() {
                 items={cartItems}
                 shippingMethod={shippingMethod}
                 onShippingChange={setShippingMethod}
+                discount={discount}
               />
             </motion.div>
           </div>

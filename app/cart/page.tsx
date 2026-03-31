@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Leaf,
@@ -23,6 +23,7 @@ import Footer from "@/components/Footer";
 import ProductImage from "@/components/ProductImage";
 import { useCart } from "@/contexts/CartContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
+import CouponSelector from "@/components/CouponSelector";
 
 const E = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
@@ -57,7 +58,7 @@ function CartItemRow({
     >
       {/* Thumbnail */}
       <div
-        className="w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+        className="w-20 h-20 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
         style={{ 
           background: item.imageUrl ? "#FFFFFF" : `${color}12`, 
           border: `1px solid ${color}20` 
@@ -99,7 +100,7 @@ function CartItemRow({
           </div>
           <button
             onClick={() => onRemove(item.productId)}
-            className="w-7 h-7 flex items-center justify-center rounded-full transition-colors duration-200 flex-shrink-0"
+            className="w-7 h-7 flex items-center justify-center rounded-full transition-colors duration-200 shrink-0"
             style={{ color: "#9AABA5" }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.color = "#ef4444";
@@ -161,10 +162,33 @@ function CartItemRow({
 /* ── Cart Page ──────────────────────────────────────────── */
 export default function CartPage() {
   const router = useRouter();
-  const { cartItems, updateQuantity, removeFromCart, subtotal, cartCount } = useCart();
+  const { 
+    cartItems, 
+    updateQuantity, 
+    removeFromCart, 
+    subtotal, 
+    cartCount,
+    applyCoupon,
+    removeCoupon,
+    appliedCoupon,
+    discount,
+    total: cartTotal,
+  } = useCart();
   const { currentUser, dbUser, openModal } = useAuthModal();
-  const [coupon, setCoupon] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  // Listen for coupon applied event
+  useEffect(() => {
+    const handleCouponApplied = (event: any) => {
+      setToastMessage(`🎉 Coupon ${event.detail.code} applied! You saved ₹${event.detail.discount}`);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    };
+
+    window.addEventListener('coupon-applied', handleCouponApplied);
+    return () => window.removeEventListener('coupon-applied', handleCouponApplied);
+  }, []);
 
   const handleQtyChange = (productId: string, qty: number) => {
     updateQuantity(productId, qty);
@@ -175,8 +199,6 @@ export default function CartPage() {
   };
 
   const shipping = subtotal >= 2999 ? 0 : 199;
-  const discount = couponApplied ? Math.round(subtotal * 0.1) : 0;
-  const total = subtotal + shipping - discount;
   const freeShippingThreshold = 2999;
   const freeShippingProgress = Math.min((subtotal / freeShippingThreshold) * 100, 100);
 
@@ -374,6 +396,7 @@ export default function CartPage() {
                       ₹{subtotal.toLocaleString("en-IN")}
                     </span>
                   </div>
+                  
                   <div className="flex justify-between">
                     <span
                       className="text-sm"
@@ -391,83 +414,44 @@ export default function CartPage() {
                       {shipping === 0 ? "FREE" : `₹${shipping}`}
                     </span>
                   </div>
-                  {couponApplied && (
-                    <div className="flex justify-between">
-                      <span
-                        className="text-sm"
-                        style={{ color: "#2A9D8F", fontFamily: "var(--font-inter), sans-serif" }}
+                  
+                  {/* Animated Reward Discount Line Item */}
+                  <AnimatePresence>
+                    {appliedCoupon && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0, y: -10 }}
+                        animate={{ opacity: 1, height: "auto", y: 0 }}
+                        exit={{ opacity: 0, height: 0, y: -10 }}
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        className="flex justify-between overflow-hidden"
                       >
-                        Discount (FOLLICIA10)
-                      </span>
-                      <span
-                        className="text-sm font-semibold"
-                        style={{ color: "#2A9D8F", fontFamily: "var(--font-montserrat), sans-serif" }}
-                      >
-                        -₹{discount.toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  )}
+                        <span
+                          className="text-sm"
+                          style={{ color: "#2A9D8F", fontFamily: "var(--font-inter), sans-serif" }}
+                        >
+                          Reward Discount
+                        </span>
+                        <span
+                          className="text-sm font-semibold"
+                          style={{ color: "#2A9D8F", fontFamily: "var(--font-montserrat), sans-serif" }}
+                        >
+                          -₹{discount.toLocaleString("en-IN")}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
-                {/* Coupon */}
-                <div className="mb-5">
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (coupon.toUpperCase() === "FOLLICIA10") {
-                        setCouponApplied(true);
-                      }
-                    }}
-                    className="flex gap-2"
-                  >
-                    <input
-                      type="text"
-                      value={coupon}
-                      onChange={(e) => setCoupon(e.target.value)}
-                      placeholder="Coupon code"
-                      disabled={couponApplied}
-                      className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none transition-all duration-200"
-                      style={{
-                        border: "1.5px solid #D5E0DC",
-                        fontFamily: "var(--font-inter), sans-serif",
-                        color: "#0D3B44",
-                        background: couponApplied ? "#F4F7F5" : "#FAFCFB",
-                      }}
-                      onFocus={(e) => {
-                        e.currentTarget.style.borderColor = "#2A9D8F";
-                      }}
-                      onBlur={(e) => {
-                        e.currentTarget.style.borderColor = "#D5E0DC";
-                      }}
+                {/* Zomato-Style Coupon Selector */}
+                {currentUser && dbUser && (
+                  <div className="mb-5">
+                    <CouponSelector 
+                      onApplyCoupon={applyCoupon}
+                      onRemoveCoupon={removeCoupon}
+                      appliedCoupon={appliedCoupon}
                     />
-                    <button
-                      type="submit"
-                      disabled={couponApplied}
-                      className="px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200"
-                      style={{
-                        background: couponApplied ? "rgba(42,157,143,0.1)" : "#0D3B44",
-                        color: couponApplied ? "#2A9D8F" : "#F4F7F5",
-                        fontFamily: "var(--font-montserrat), sans-serif",
-                        border: "none",
-                        cursor: couponApplied ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      {couponApplied ? "✓ Applied" : "Apply"}
-                    </button>
-                  </form>
-                  {!couponApplied && (
-                    <p className="text-xs mt-1.5" style={{ color: "#9AABA5" }}>
-                      Try:{" "}
-                      <button
-                        onClick={() => setCoupon("FOLLICIA10")}
-                        className="underline"
-                        style={{ color: "#2A9D8F", background: "none", border: "none", cursor: "pointer" }}
-                      >
-                        FOLLICIA10
-                      </button>
-                    </p>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Total */}
                 <div
@@ -484,7 +468,7 @@ export default function CartPage() {
                     className="text-xl font-bold"
                     style={{ fontFamily: "var(--font-playfair), serif", color: "#0D3B44" }}
                   >
-                    ₹{total.toLocaleString("en-IN")}
+                    ₹{cartTotal.toLocaleString("en-IN")}
                   </span>
                 </div>
 
@@ -572,6 +556,33 @@ export default function CartPage() {
       </div>
 
       <Footer />
+      
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            style={{
+              position: "fixed",
+              bottom: "2rem",
+              right: "2rem",
+              background: "linear-gradient(135deg, #2A9D8F, #4DBCB0)",
+              color: "#FFFFFF",
+              padding: "1rem 1.5rem",
+              borderRadius: "1rem",
+              boxShadow: "0 8px 24px rgba(42,157,143,0.4)",
+              fontFamily: "var(--font-inter), sans-serif",
+              fontSize: "0.9rem",
+              fontWeight: 600,
+              zIndex: 1000,
+            }}
+          >
+            {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
