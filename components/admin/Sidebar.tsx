@@ -219,6 +219,29 @@ function BreathingLogo() {
 
 // Admin Profile Card
 function AdminProfileCard() {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    
+    try {
+      const response = await fetch("/api/admin/logout", {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        // Redirect to home page
+        window.location.href = "/";
+      } else {
+        console.error("Logout failed");
+        setIsLoggingOut(false);
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <motion.div
       className="px-4 pt-4 border-t"
@@ -248,21 +271,42 @@ function AdminProfileCard() {
           </div>
         </div>
         <motion.button
+          onClick={handleLogout}
+          disabled={isLoggingOut}
           className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium"
           style={{
             fontFamily: "var(--font-inter)",
             border: `1px solid ${B.forestTeal}`,
-            color: "rgba(255,255,255,0.7)",
+            color: isLoggingOut ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.7)",
+            cursor: isLoggingOut ? "not-allowed" : "pointer",
           }}
-          whileHover={{
+          whileHover={!isLoggingOut ? {
             borderColor: B.seafoam,
             color: "white",
             scale: 1.02,
-          }}
-          whileTap={{ scale: 0.98 }}
+          } : {}}
+          whileTap={!isLoggingOut ? { scale: 0.98 } : {}}
         >
-          <LogOut size={14} />
-          Logout
+          {isLoggingOut ? (
+            <>
+              <div
+                style={{
+                  width: "14px",
+                  height: "14px",
+                  borderRadius: "50%",
+                  border: "2px solid rgba(255,255,255,0.3)",
+                  borderTopColor: "rgba(255,255,255,0.8)",
+                  animation: "spin 0.6s linear infinite",
+                }}
+              />
+              Logging out...
+            </>
+          ) : (
+            <>
+              <LogOut size={14} />
+              Logout
+            </>
+          )}
         </motion.button>
       </div>
     </motion.div>
