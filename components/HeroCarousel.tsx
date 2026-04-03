@@ -141,7 +141,7 @@ export default function HeroCarousel() {
           {/* Image */}
           <Image
             src={slide.image}
-            alt="Hero Carousel Image"
+            alt={`${slide.headline.replace(/\n/g, " ")} - Follicia Hair Care Collection`}
             fill
             priority={page === 0}
             style={{ objectFit: "cover", objectPosition: "center", pointerEvents: "none" }}

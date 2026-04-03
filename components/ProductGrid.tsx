@@ -111,7 +111,7 @@ function ProductCard({
         {p.imageUrl ? (
           <ProductImage
             src={p.imageUrl}
-            alt={p.name}
+            alt={`${p.name} - ${p.category || "Hair Care"} Product by Follicia`}
             style={{
               width: "100%",
               height: "100%",
