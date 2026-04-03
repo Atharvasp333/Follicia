@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
@@ -13,7 +13,8 @@
     "init:loyalty": "tsx prisma/init-loyalty-points.ts",
     "seed:coupons": "tsx prisma/seed-reward-coupons.ts",
     "seed:loyalty-points": "tsx scripts/seed-loyalty-points.ts",
-    "check:points": "tsx scripts/check-user-points.ts"
+    "check:points": "tsx scripts/check-user-points.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.39.0",
@@ -28,7 +29,6 @@
     "jose": "^6.2.2",
     "lucide-react": "^0.576.0",
     "next": "16.1.6",
-    "prisma": "^7.4.2",
     "radix-ui": "^1.4.3",
     "razorpay": "^2.9.6",
     "react": "19.2.3",
@@ -47,6 +47,7 @@
     "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "prisma": "^7.4.2",
     "shadcn": "^3.8.5",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
