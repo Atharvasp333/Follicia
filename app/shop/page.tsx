@@ -1,5 +1,26 @@
+import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import ShopClient, { Product } from "./ShopClient";
+
+export const metadata: Metadata = {
+  title: "Shop Premium Hair Care Products",
+  description:
+    "Explore Follicia's curated collection of clinical-grade hair care products. AI-matched serums, treatments, and scalp care solutions for your unique hair DNA.",
+  keywords: [
+    "Hair Care Products",
+    "Premium Hair Serums",
+    "Scalp Treatment",
+    "Clinical Hair Care",
+    "Hair Growth Products",
+    "Follicia Shop",
+  ],
+  openGraph: {
+    title: "Shop Premium Hair Care Products | Follicia",
+    description:
+      "Explore Follicia's curated collection of clinical-grade hair care products. AI-matched serums, treatments, and scalp care solutions for your unique hair DNA.",
+    type: "website",
+  },
+};
 
 // Brand constants for color mapping
 const B = {

@@ -29,14 +29,66 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Follicia — AI-Powered Clinical Hair & Scalp Care",
+  title: {
+    default: "Follicia | Scientific Hair Atelier",
+    template: "Follicia | %s",
+  },
   description:
-    "Stop the trial-and-error. Follicia uses AI to analyse your unique scalp biology and deliver a clinical-grade hair regimen formulated exclusively for you.",
-  keywords: ["hair care", "scalp analysis", "AI hair", "clinical hair", "personalised hair regimen"],
+    "Follicia is a premium, AI-powered hair care platform providing clinical-grade diagnostics and personalized serums based on your unique Hair DNA.",
+  keywords: [
+    "Hair Care",
+    "AI Hair Quiz",
+    "Scalp Health",
+    "Clinical Hair DNA",
+    "Personalized Serums",
+    "Hair Analysis",
+    "Scalp Treatment",
+    "Premium Hair Products",
+    "AI Hair Diagnostics",
+    "Hair Care Science",
+  ],
+  authors: [{ name: "Follicia" }],
+  creator: "Follicia",
+  publisher: "Follicia",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://follicia.com"),
   openGraph: {
-    title: "Follicia — AI-Powered Clinical Hair & Scalp Care",
-    description: "Clinical-Chic hair science, now personalised by AI.",
     type: "website",
+    locale: "en_IN",
+    url: "/",
+    siteName: "Follicia",
+    title: "Follicia | Scientific Hair Atelier",
+    description:
+      "Follicia is a premium, AI-powered hair care platform providing clinical-grade diagnostics and personalized serums based on your unique Hair DNA.",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Follicia - AI-Powered Hair Care",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Follicia | Scientific Hair Atelier",
+    description:
+      "Follicia is a premium, AI-powered hair care platform providing clinical-grade diagnostics and personalized serums based on your unique Hair DNA.",
+    images: ["/og-image.jpg"],
+    creator: "@follicia",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "your-google-verification-code",
   },
 };
 
