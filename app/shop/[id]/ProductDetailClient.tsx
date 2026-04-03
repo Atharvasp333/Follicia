@@ -39,10 +39,12 @@ export default function ProductDetailClient({ product }: { product: Product }) {
 
   const handleAddToCart = () => {
     addItem({
-      id: product.id,
+      productId: product.id,
       name: product.name,
       price: product.price,
+      priceDisplay: product.priceDisplay || `₹${product.price.toLocaleString("en-IN")}`,
       imageUrl: product.imageUrl || "/placeholder-product.jpg",
+      category: product.category,
       quantity,
     });
     setShowToast(true);

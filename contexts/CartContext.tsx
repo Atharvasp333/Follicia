@@ -24,6 +24,7 @@ export interface AppliedCoupon {
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => Promise<void>;
+  addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => Promise<void>; // Alias for addToCart
   removeFromCart: (productId: string) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -368,6 +369,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         cartItems,
         addToCart,
+        addItem: addToCart, // Alias for backward compatibility
         removeFromCart,
         updateQuantity,
         clearCart,

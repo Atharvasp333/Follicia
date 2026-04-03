@@ -70,16 +70,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 // Generate static params for all products (optional, for static generation)
-export async function generateStaticParams() {
-  const products = await prisma.product.findMany({
-    where: { isActive: true },
-    select: { id: true },
-  });
+// Commented out for Vercel deployment - pages will be dynamically rendered
+// export async function generateStaticParams() {
+//   const products = await prisma.product.findMany({
+//     where: { isActive: true },
+//     select: { id: true },
+//   });
 
-  return products.map((product) => ({
-    id: product.id,
-  }));
-}
+//   return products.map((product) => ({
+//     id: product.id,
+//   }));
+// }
+
+// Force dynamic rendering for Vercel
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function ProductPage({ params }: Props) {
   const product = await prisma.product.findUnique({
