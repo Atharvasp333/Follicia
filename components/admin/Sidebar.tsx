@@ -41,6 +41,12 @@ const navGroups = [
       { href: "/admin/customers", icon: Users, label: "User Management" },
     ],
   },
+  {
+    label: "CRM INTELLIGENCE",
+    items: [
+      { href: "/admin/crm-intelligence", icon: TrendingUp, label: "Customer Intelligence" },
+    ],
+  },
 ];
 
 // Magnetic Icon Component
