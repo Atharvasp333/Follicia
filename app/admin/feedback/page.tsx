@@ -166,7 +166,7 @@ export default function AdminFeedbackPage() {
     },
   ].filter((item) => !isNaN(item.avgUrgency) && item.avgUrgency > 0);
 
-  const COLORS = ['#0D2F2F', '#14B8A6', '#94A3B8', '#F1F5F9'];
+  const CHART_COLORS = [B.forestTeal, B.seafoam, "#4A6B63", "#9AABA5"];
 
   const getSentimentColor = (sentiment: string | null) => {
     switch (sentiment) {
@@ -392,7 +392,7 @@ export default function AdminFeedbackPage() {
                     {categoryData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
                         stroke="none"
                       />
                     ))}

@@ -15,6 +15,7 @@ import {
   Menu,
   ChevronRight,
   Crown,
+  MessageSquare,
 } from "lucide-react";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { auth } from "@/lib/firebase";
@@ -59,6 +60,12 @@ const NAV_ITEMS = [
     label: "Diagnostic History",
     href: "/dashboard/results",
     icon: ClipboardList,
+    exact: false,
+  },
+  {
+    label: "Share Feedback",
+    href: "/dashboard/feedback",
+    icon: MessageSquare,
     exact: false,
   },
 ];
