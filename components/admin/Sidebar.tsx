@@ -12,6 +12,7 @@ import {
   Users,
   LogOut,
   Plus,
+  MessageSquare,
 } from "lucide-react";
 import { GrainTexture } from "./GrainTexture";
 
@@ -45,6 +46,7 @@ const navGroups = [
     label: "CRM INTELLIGENCE",
     items: [
       { href: "/admin/crm-intelligence", icon: TrendingUp, label: "Customer Intelligence" },
+      { href: "/admin/feedback", icon: MessageSquare, label: "AI Feedback" },
     ],
   },
 ];

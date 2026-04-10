@@ -14,6 +14,9 @@
     "seed:coupons": "tsx prisma/seed-reward-coupons.ts",
     "seed:loyalty-points": "tsx scripts/seed-loyalty-points.ts",
     "check:points": "tsx scripts/check-user-points.ts",
+    "setup:feedback": "tsx scripts/setup-feedback.ts",
+    "seed:feedback": "tsx scripts/test-feedback-samples.ts",
+    "verify:feedback": "tsx scripts/verify-feedback-code.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
