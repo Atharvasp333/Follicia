@@ -371,11 +371,12 @@ export default function AdminFeedbackPage() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) =>
-                      percent
+                    label={(props: any) => {
+                      const { name, percent } = props;
+                      return percent
                         ? `${name} ${(percent * 100).toFixed(0)}%`
-                        : `${name} 0%`
-                    }
+                        : `${name || ''} 0%`;
+                    }}
                     innerRadius={60}
                     outerRadius={80}
                     fill="#8884d8"
