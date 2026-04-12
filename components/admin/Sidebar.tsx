@@ -13,6 +13,7 @@ import {
   LogOut,
   Plus,
   MessageSquare,
+  Megaphone,
 } from "lucide-react";
 import { GrainTexture } from "./GrainTexture";
 
@@ -31,6 +32,7 @@ const navGroups = [
     items: [
       { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
       { href: "/admin/analytics", icon: TrendingUp, label: "Analytics" },
+      { href: "/admin/revenue", icon: TrendingUp, label: "Revenue Model" },
     ],
   },
   {
@@ -47,6 +49,7 @@ const navGroups = [
     items: [
       { href: "/admin/crm-intelligence", icon: TrendingUp, label: "Customer Intelligence" },
       { href: "/admin/feedback", icon: MessageSquare, label: "AI Feedback" },
+      { href: "/admin/marketing", icon: Megaphone, label: "Marketing Strategy" },
     ],
   },
 ];
