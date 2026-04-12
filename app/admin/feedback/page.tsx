@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Sparkles,
   AlertCircle,
@@ -57,6 +57,7 @@ export default function AdminFeedbackPage() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterSentiment, setFilterSentiment] = useState<string>("all");
   const [scanning, setScanning] = useState(true);
 
   useEffect(() => {
@@ -95,6 +96,8 @@ export default function AdminFeedbackPage() {
   const filteredFeedback = feedback.filter((item) => {
     if (filterStatus !== "all" && item.status !== filterStatus) return false;
     if (filterCategory !== "all" && item.aiCategory !== filterCategory)
+      return false;
+    if (filterSentiment !== "all" && item.sentiment !== filterSentiment)
       return false;
     return true;
   });
@@ -547,6 +550,24 @@ export default function AdminFeedbackPage() {
             <option value="WEBSITE">Website</option>
             <option value="DELIVERY">Delivery</option>
           </select>
+          <select
+            value={filterSentiment}
+            onChange={(e) => setFilterSentiment(e.target.value)}
+            style={{
+              padding: "0.5rem 1rem",
+              borderRadius: "8px",
+              border: `1px solid ${B.lightGray}`,
+              background: "white",
+              color: B.darkText,
+              fontSize: "0.9rem",
+              cursor: "pointer",
+            }}
+          >
+            <option value="all">All Sentiments</option>
+            <option value="POSITIVE">😊 Positive</option>
+            <option value="NEUTRAL">😐 Neutral</option>
+            <option value="NEGATIVE">😞 Negative</option>
+          </select>
         </motion.div>
 
         {/* Feedback Cards */}
@@ -556,18 +577,16 @@ export default function AdminFeedbackPage() {
           transition={{ delay: 0.3 }}
           style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
-          <AnimatePresence>
-            {filteredFeedback.map((item, index) => (
-              <FeedbackCard
-                key={item.id}
-                feedback={item}
-                index={index}
-                onUpdateStatus={updateStatus}
-                getSentimentColor={getSentimentColor}
-                getCategoryIcon={getCategoryIcon}
-              />
-            ))}
-          </AnimatePresence>
+          {filteredFeedback.map((item, index) => (
+            <FeedbackCard
+              key={item.id}
+              feedback={item}
+              index={index}
+              onUpdateStatus={updateStatus}
+              getSentimentColor={getSentimentColor}
+              getCategoryIcon={getCategoryIcon}
+            />
+          ))}
 
           {filteredFeedback.length === 0 && (
             <div
@@ -664,11 +683,7 @@ function FeedbackCard({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ delay: index * 0.05 }}
+    <div
       style={{
         background: "white",
         borderRadius: "16px",
@@ -953,6 +968,6 @@ function FeedbackCard({
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
