@@ -7,7 +7,6 @@ import {
   Users,
   TrendingUp,
   AlertCircle,
-  Gift,
   Sparkles,
   Target,
   X,
@@ -19,8 +18,6 @@ import {
   Check,
 } from "lucide-react";
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   BarChart,
@@ -142,6 +139,12 @@ export default function CRMIntelligencePage() {
       setLoading(true);
       const res = await fetch("/api/admin/crm-intelligence");
       const json = await res.json();
+      
+      // Limit onboarding trend to last 2 months
+      if (json.onboardingTrend && json.onboardingTrend.length > 2) {
+        json.onboardingTrend = json.onboardingTrend.slice(-2);
+      }
+      
       setData(json);
     } catch (error) {
       console.error("Failed to fetch CRM data:", error);
@@ -277,33 +280,26 @@ export default function CRMIntelligencePage() {
       {/* Stats Overview */}
       <StatsOverview stats={data.churnStats} totalUsers={data.totalUsers} />
 
-      {/* Main Grid */}
+      {/* Hair DNA Segmentation with User List */}
+      <HairDNASegmentation 
+        data={data.hairDnaSegmentation}
+        users={data.churnAnalysis}
+        activeFilter={activeFilter}
+        onFilterClick={handleFilterClick}
+        onCampaignClick={(type, value, count) => setCampaignModal({ type, value, count })}
+      />
+
+      {/* Customer Onboarding & Membership Distribution - Side by Side */}
       <div style={{ 
         display: "grid", 
         gridTemplateColumns: "1fr 1fr", 
         gap: "1.5rem",
-        marginBottom: "1.5rem"
+        marginBottom: "1.5rem",
+        alignItems: "stretch"
       }}>
-        <HairDNASegmentation 
-          data={data.hairDnaSegmentation} 
-          activeFilter={activeFilter}
-          onFilterClick={handleFilterClick}
-          onCampaignClick={(type, value, count) => setCampaignModal({ type, value, count })}
-        />
-        <ChurnRiskTracker 
-          users={filteredUsers}
-          totalUsers={data.churnAnalysis.length}
-          isFiltered={activeFilter !== null}
-        />
+        <CustomerOnboardingChart data={data.onboardingTrend} />
+        <MembershipDistribution data={data.membershipDistribution} totalUsers={data.totalUsers} />
       </div>
-
-      {/* NEW SECTIONS */}
-      
-      {/* Customer Onboarding Line Chart */}
-      <CustomerOnboardingChart data={data.onboardingTrend} />
-
-      {/* Membership Distribution */}
-      <MembershipDistribution data={data.membershipDistribution} totalUsers={data.totalUsers} />
 
       {/* Churn vs Retention Bar Chart */}
       <ChurnRetentionChart data={data.churnRetentionTrend} />
@@ -452,14 +448,16 @@ function StatsOverview({ stats, totalUsers }: {
   );
 }
 
-// Hair DNA Segmentation Component with Interactive Filtering
+// Hair DNA Segmentation Component with Horizontal Layout and User List
 function HairDNASegmentation({ 
   data,
+  users,
   activeFilter,
   onFilterClick,
   onCampaignClick
 }: { 
   data: CRMData["hairDnaSegmentation"];
+  users: UserAnalysis[];
   activeFilter: ActiveFilter | null;
   onFilterClick: (type: ActiveFilter["type"], value: string, displayName: string) => void;
   onCampaignClick: (type: string, value: string, count: number) => void;
@@ -470,32 +468,33 @@ function HairDNASegmentation({
   const scalpData = Object.entries(data.scalpTypes).map(([name, value]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
     value,
-    action: getRecommendedAction(name, "scalp"),
-    product: getTopProduct(name, "scalp"),
     rawName: name,
   }));
 
   const porosityData = Object.entries(data.porosityLevels).map(([name, value]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
     value,
-    action: getRecommendedAction(name, "porosity"),
-    product: getTopProduct(name, "porosity"),
     rawName: name,
   }));
 
   const hairTypeData = Object.entries(data.hairTypes).map(([name, value]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
     value,
-    action: getRecommendedAction(name, "hairType"),
-    product: getTopProduct(name, "hairType"),
     rawName: name,
   }));
+
+  // Filter users based on active filter
+  const filteredUsers = users.filter((user) => {
+    if (!activeFilter) return true;
+    const userValue = user[activeFilter.type];
+    return userValue?.toLowerCase() === activeFilter.value.toLowerCase();
+  });
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, x: -50 }}
-      animate={isInView ? { opacity: 1, x: 0 } : {}}
+      initial={{ opacity: 0, y: 20 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6 }}
       style={{
         background: "white",
@@ -504,6 +503,7 @@ function HairDNASegmentation({
         padding: "1.5rem",
         border: `1px solid rgba(42, 157, 143, 0.1)`,
         boxShadow: "0 8px 32px rgba(13, 59, 68, 0.08)",
+        marginBottom: "1.5rem",
       }}
     >
       <div style={{ marginBottom: "1.5rem" }}>
@@ -521,368 +521,68 @@ function HairDNASegmentation({
           color: B.bodyText,
           fontFamily: "var(--font-inter)",
         }}>
-          Click segments to filter ΓÇó Click target icon to launch campaigns
+          Click segments to filter • Click target icon to launch campaigns
         </p>
       </div>
 
-      {/* Bento Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-        <SegmentCard 
+      {/* Three Column Horizontal Layout */}
+      <div style={{ 
+        display: "grid", 
+        gridTemplateColumns: "1fr 1fr 1fr", 
+        gap: "1.5rem",
+        marginBottom: "1.5rem"
+      }}>
+        <SegmentGroup 
           title="Scalp Types" 
           data={scalpData} 
-          delay={0.2}
           filterType="scalpCondition"
           activeFilter={activeFilter}
           onFilterClick={onFilterClick}
           onCampaignClick={onCampaignClick}
         />
-        <SegmentCard 
+        <SegmentGroup 
           title="Porosity Levels" 
           data={porosityData} 
-          delay={0.3}
           filterType="porosity"
           activeFilter={activeFilter}
           onFilterClick={onFilterClick}
           onCampaignClick={onCampaignClick}
         />
-      </div>
-      
-      {/* Hair Type Card - Full Width */}
-      <div style={{ marginTop: "1rem" }}>
-        <SegmentCard 
+        <SegmentGroup 
           title="Hair Types" 
           data={hairTypeData} 
-          delay={0.4}
           filterType="hairType"
           activeFilter={activeFilter}
           onFilterClick={onFilterClick}
           onCampaignClick={onCampaignClick}
         />
       </div>
-    </motion.div>
-  );
-}
 
-// Interactive Segment Card with Drill-Down
-function SegmentCard({ 
-  title, 
-  data, 
-  delay,
-  filterType,
-  activeFilter,
-  onFilterClick,
-  onCampaignClick
-}: { 
-  title: string; 
-  data: Array<{ name: string; value: number; action: string; product: string; rawName: string }>; 
-  delay: number;
-  filterType: ActiveFilter["type"];
-  activeFilter: ActiveFilter | null;
-  onFilterClick: (type: ActiveFilter["type"], value: string, displayName: string) => void;
-  onCampaignClick: (type: string, value: string, count: number) => void;
-}) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const total = data.reduce((sum, item) => sum + item.value, 0);
-
-  const colors = [B.seafoam, "#F59E0B", "#8B5CF6", "#EC4899"];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay, duration: 0.5 }}
-      style={{
-        background: B.cream,
-        borderRadius: "16px",
-        padding: "1.25rem",
-        border: `1px solid ${B.lightGray}`,
-      }}
-    >
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center",
-        marginBottom: "1rem"
+      {/* User Count Info */}
+      <div style={{
+        fontSize: "0.85rem",
+        color: B.bodyText,
+        fontFamily: "var(--font-inter)",
+        marginBottom: "1rem",
+        fontWeight: 600,
       }}>
-        <h3 style={{
-          fontSize: "0.8rem",
-          fontWeight: 700,
-          color: B.darkText,
-          textTransform: "uppercase",
-          letterSpacing: "0.5px",
-          fontFamily: "monospace",
-        }}>
-          {title}
-        </h3>
+        {activeFilter 
+          ? `Showing ${filteredUsers.length} of ${users.length} users`
+          : `Showing all ${users.length} users`
+        }
       </div>
 
-      {data.length > 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          {data.map((item, index) => {
-            const percentage = total > 0 ? (item.value / total) * 100 : 0;
-            const isHovered = hoveredIndex === index;
-            const isActive = activeFilter?.type === filterType && 
-                            activeFilter?.value.toLowerCase() === item.rawName.toLowerCase();
-
-            return (
-              <motion.div
-                key={item.name}
-                onHoverStart={() => setHoveredIndex(index)}
-                onHoverEnd={() => setHoveredIndex(null)}
-                onClick={() => onFilterClick(filterType, item.rawName, item.name)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                style={{
-                  background: "white",
-                  borderRadius: "12px",
-                  padding: "0.75rem",
-                  cursor: "pointer",
-                  position: "relative",
-                  overflow: "hidden",
-                  border: isActive ? `2px solid ${B.seafoam}` : "2px solid transparent",
-                  boxShadow: isActive ? `0 0 20px ${B.seafoam}40` : "none",
-                  textAlign: "left",
-                  width: "100%",
-                }}
-              >
-                {/* Progress Bar Background */}
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${percentage}%` }}
-                  transition={{ duration: 1, delay: delay + index * 0.1 }}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    height: "100%",
-                    background: `${colors[index % colors.length]}20`,
-                    borderRadius: "12px",
-                  }}
-                />
-
-                <div style={{ position: "relative", zIndex: 1 }}>
-                  <div style={{ 
-                    display: "flex", 
-                    justifyContent: "space-between", 
-                    alignItems: "center",
-                    marginBottom: "0.25rem"
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <span style={{
-                        fontSize: "0.85rem",
-                        fontWeight: 600,
-                        color: B.darkText,
-                        fontFamily: "var(--font-inter)",
-                      }}>
-                        {item.name}
-                      </span>
-                      {isActive && (
-                        <motion.span
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "0.25rem",
-                            padding: "0.15rem 0.5rem",
-                            borderRadius: "10px",
-                            background: B.seafoam,
-                            color: "white",
-                            fontSize: "0.65rem",
-                            fontWeight: 700,
-                          }}
-                        >
-                          <Filter size={10} />
-                          ACTIVE
-                        </motion.span>
-                      )}
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <span style={{
-                        fontSize: "1rem",
-                        fontWeight: 700,
-                        color: colors[index % colors.length],
-                        fontFamily: "monospace",
-                      }}>
-                        {percentage.toFixed(0)}%
-                      </span>
-                      <motion.button
-                        whileHover={{ scale: 1.2, rotate: 90 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onCampaignClick(title, item.name, item.value);
-                        }}
-                        style={{
-                          background: colors[index % colors.length],
-                          border: "none",
-                          borderRadius: "50%",
-                          width: "24px",
-                          height: "24px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <Target size={12} color="white" />
-                      </motion.button>
-                    </div>
-                  </div>
-                  
-                  {/* Top Product Badge */}
-                  <div style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    padding: "0.15rem 0.5rem",
-                    borderRadius: "8px",
-                    background: `${colors[index % colors.length]}15`,
-                    marginBottom: "0.25rem",
-                  }}>
-                    <Sparkles size={10} color={colors[index % colors.length]} />
-                    <span style={{
-                      fontSize: "0.65rem",
-                      fontWeight: 600,
-                      color: colors[index % colors.length],
-                      fontFamily: "var(--font-inter)",
-                    }}>
-                      {item.product}
-                    </span>
-                  </div>
-
-                  {/* Recommended Action on Hover */}
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ 
-                      opacity: isHovered ? 1 : 0, 
-                      height: isHovered ? "auto" : 0 
-                    }}
-                    style={{
-                      fontSize: "0.7rem",
-                      color: B.bodyText,
-                      fontStyle: "italic",
-                      marginTop: "0.25rem",
-                      fontFamily: "var(--font-inter)",
-                    }}
-                  >
-                    ≡ƒÆí {item.action}
-                  </motion.div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      ) : (
-        <div style={{
-          padding: "2rem 1rem",
-          textAlign: "center",
-          color: B.midGray,
-          fontSize: "0.8rem",
-        }}>
-          No data available
-        </div>
-      )}
-    </motion.div>
-  );
-}
-
-// Churn Risk Tracker with Filtered Results
-function ChurnRiskTracker({ 
-  users,
-  totalUsers,
-  isFiltered
-}: { 
-  users: UserAnalysis[];
-  totalUsers: number;
-  isFiltered: boolean;
-}) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: 0.3 });
-  const [selectedUser, setSelectedUser] = useState<UserAnalysis | null>(null);
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, x: 50 }}
-      animate={isInView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.6 }}
-      style={{
-        background: "white",
-        backdropFilter: "blur(20px)",
-        borderRadius: "20px",
-        padding: "1.5rem",
-        border: `1px solid rgba(42, 157, 143, 0.1)`,
-        boxShadow: "0 8px 32px rgba(13, 59, 68, 0.08)",
-      }}
-    >
-      <div style={{ marginBottom: "1.5rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <h2 style={{
-              fontFamily: "var(--font-playfair), serif",
-              fontSize: "1.5rem",
-              fontWeight: 400,
-              color: B.darkText,
-              marginBottom: "0.25rem",
-            }}>
-              Churn Risk & Retention Tracker
-            </h2>
-            <p style={{
-              fontSize: "0.85rem",
-              color: B.bodyText,
-              fontFamily: "var(--font-inter)",
-            }}>
-              {isFiltered 
-                ? `Showing ${users.length} of ${totalUsers} users (filtered)`
-                : `Real-time customer engagement monitoring`
-              }
-            </p>
-          </div>
-          {isFiltered && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              style={{
-                padding: "0.5rem 1rem",
-                borderRadius: "12px",
-                background: `${B.seafoam}15`,
-                border: `1px solid ${B.seafoam}30`,
-              }}
-            >
-              <div style={{
-                fontSize: "0.7rem",
-                color: B.seafoam,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-                fontFamily: "monospace",
-              }}>
-                Filtered View
-              </div>
-              <div style={{
-                fontSize: "1.25rem",
-                fontWeight: 700,
-                color: B.seafoam,
-                fontFamily: "monospace",
-              }}>
-                {users.length}
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-
-      {/* Table */}
+      {/* User List Table */}
       <div style={{ 
-        maxHeight: "500px", 
+        maxHeight: "400px", 
         overflowY: "auto",
         borderRadius: "12px",
+        border: `1px solid ${B.lightGray}`,
       }}>
         {/* Header */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: "2fr 1fr 1fr 1fr",
+          gridTemplateColumns: "2fr 2fr 1fr 1fr",
           padding: "0.75rem 1rem",
           background: B.cream,
           borderRadius: "12px 12px 0 0",
@@ -898,7 +598,17 @@ function ChurnRiskTracker({
             letterSpacing: "0.5px",
             fontFamily: "monospace",
           }}>
-            Customer
+            Name
+          </div>
+          <div style={{ 
+            fontSize: "0.7rem", 
+            fontWeight: 700, 
+            color: B.bodyText,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
+            fontFamily: "monospace",
+          }}>
+            Email
           </div>
           <div style={{ 
             fontSize: "0.7rem", 
@@ -920,28 +630,13 @@ function ChurnRiskTracker({
           }}>
             Days Idle
           </div>
-          <div style={{ 
-            fontSize: "0.7rem", 
-            fontWeight: 700, 
-            color: B.bodyText,
-            textTransform: "uppercase",
-            letterSpacing: "0.5px",
-            fontFamily: "monospace",
-          }}>
-            Action
-          </div>
         </div>
 
-        {/* Rows with AnimatePresence for smooth transitions */}
+        {/* Rows */}
         <AnimatePresence mode="popLayout">
-          {users.length > 0 ? (
-            users.map((user, index) => (
-              <UserRow 
-                key={user.id} 
-                user={user} 
-                index={index}
-                onAction={() => setSelectedUser(user)}
-              />
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user) => (
+              <UserListRow key={user.id} user={user} />
             ))
           ) : (
             <motion.div
@@ -956,61 +651,162 @@ function ChurnRiskTracker({
             >
               <Filter size={48} style={{ margin: "0 auto 1rem", opacity: 0.3 }} />
               <p style={{ fontSize: "0.9rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-                No users match this filter
+                No customers found for this segment
               </p>
               <p style={{ fontSize: "0.75rem" }}>
-                Try selecting a different segment or clear the filter
+                Try selecting a different segment
               </p>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-
-      {/* Win-back Modal */}
-      {selectedUser && (
-        <WinBackModal 
-          user={selectedUser} 
-          onClose={() => setSelectedUser(null)} 
-        />
-      )}
     </motion.div>
   );
 }
 
-// User Row Component with Smooth Transitions
-function UserRow({ 
-  user, 
-  index,
-  onAction 
+// Segment Group Component (Vertical list of chips)
+function SegmentGroup({ 
+  title, 
+  data, 
+  filterType,
+  activeFilter,
+  onFilterClick,
+  onCampaignClick
 }: { 
-  user: UserAnalysis; 
-  index: number;
-  onAction: () => void;
+  title: string; 
+  data: Array<{ name: string; value: number; rawName: string }>; 
+  filterType: ActiveFilter["type"];
+  activeFilter: ActiveFilter | null;
+  onFilterClick: (type: ActiveFilter["type"], value: string, displayName: string) => void;
+  onCampaignClick: (type: string, value: string, count: number) => void;
 }) {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  const colors = [B.seafoam, "#F59E0B", "#8B5CF6", "#EC4899", "#10B981"];
+
+  return (
+    <div>
+      <h3 style={{
+        fontSize: "0.75rem",
+        fontWeight: 700,
+        color: B.darkText,
+        textTransform: "uppercase",
+        letterSpacing: "0.5px",
+        fontFamily: "monospace",
+        marginBottom: "0.75rem",
+      }}>
+        {title}
+      </h3>
+      
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        {data.map((item, index) => {
+          const percentage = total > 0 ? (item.value / total) * 100 : 0;
+          const isActive = activeFilter?.type === filterType && 
+                          activeFilter?.value.toLowerCase() === item.rawName.toLowerCase();
+
+          return (
+            <motion.div
+              key={item.name}
+              onClick={() => onFilterClick(filterType, item.rawName, item.name)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "6px 12px",
+                borderRadius: "8px",
+                background: isActive ? `${B.seafoam}15` : B.cream,
+                border: isActive ? `2px solid ${B.seafoam}` : "2px solid transparent",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontFamily: "var(--font-inter)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{
+                  fontWeight: 600,
+                  color: B.darkText,
+                }}>
+                  {item.name}
+                </span>
+                {isActive && (
+                  <span style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    padding: "2px 6px",
+                    borderRadius: "6px",
+                    background: B.seafoam,
+                    color: "white",
+                    fontSize: "10px",
+                    fontWeight: 700,
+                  }}>
+                    ACTIVE
+                  </span>
+                )}
+              </div>
+              
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  color: colors[index % colors.length],
+                  fontFamily: "monospace",
+                }}>
+                  {percentage.toFixed(0)}%
+                </span>
+                <motion.button
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCampaignClick(title, item.name, item.value);
+                  }}
+                  style={{
+                    background: colors[index % colors.length],
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "20px",
+                    height: "20px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                  }}
+                >
+                  <Target size={10} color="white" />
+                </motion.button>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// User List Row Component
+function UserListRow({ user }: { user: UserAnalysis }) {
   const statusConfig = {
     active: { 
       color: "#10B981", 
-      bg: "#D1FAE5", 
+      bg: "#D1FAE5",
       label: "Active",
-      pulse: false 
     },
     "at-risk": { 
       color: "#F59E0B", 
       bg: "#FEF3C7", 
       label: "At Risk",
-      pulse: true 
     },
     churned: { 
       color: "#EF4444", 
       bg: "#FEE2E2", 
       label: "Churned",
-      pulse: false 
     },
     new: { 
       color: B.seafoam, 
       bg: "#CCFBF1", 
       label: "New",
-      pulse: false 
     },
   };
 
@@ -1019,74 +815,53 @@ function UserRow({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -50 }}
+      exit={{ opacity: 0, x: -20 }}
       transition={{ 
         layout: { type: "spring", stiffness: 300, damping: 30 },
-        opacity: { duration: 0.3 },
-        y: { duration: 0.3 },
-        x: { duration: 0.2 }
-      }}
-      whileHover={{ 
-        backgroundColor: B.cream,
-        scale: 1.01,
+        opacity: { duration: 0.2 },
       }}
       style={{
         display: "grid",
-        gridTemplateColumns: "2fr 1fr 1fr 1fr",
-        padding: "1rem",
+        gridTemplateColumns: "2fr 2fr 1fr 1fr",
+        padding: "0.75rem 1rem",
         borderBottom: `1px solid ${B.lightGray}`,
         alignItems: "center",
-        cursor: "pointer",
       }}
     >
-      <div>
-        <div style={{
-          fontSize: "0.85rem",
-          fontWeight: 600,
-          color: B.darkText,
-          fontFamily: "var(--font-inter)",
-        }}>
-          {user.name}
-        </div>
-        <div style={{
-          fontSize: "0.7rem",
-          color: B.midGray,
-          fontFamily: "monospace",
-        }}>
-          {user.email}
-        </div>
+      <div style={{
+        fontSize: "0.85rem",
+        fontWeight: 600,
+        color: B.darkText,
+        fontFamily: "var(--font-inter)",
+      }}>
+        {user.name}
+      </div>
+
+      <div style={{
+        fontSize: "0.75rem",
+        color: B.midGray,
+        fontFamily: "monospace",
+      }}>
+        {user.email}
       </div>
 
       <div>
-        <motion.span
-          animate={config.pulse ? {
-            boxShadow: [
-              `0 0 0 0 ${config.color}40`,
-              `0 0 0 8px ${config.color}00`,
-            ],
-          } : {}}
-          transition={config.pulse ? {
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          } : {}}
-          style={{
-            display: "inline-block",
-            padding: "0.25rem 0.75rem",
-            borderRadius: "20px",
-            background: config.bg,
-            color: config.color,
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.5px",
-            fontFamily: "monospace",
-          }}
-        >
+        <span style={{
+          display: "inline-block",
+          padding: "0.25rem 0.75rem",
+          borderRadius: "20px",
+          background: config.bg,
+          color: config.color,
+          fontSize: "0.7rem",
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+          fontFamily: "monospace",
+        }}>
           {config.label}
-        </motion.span>
+        </span>
       </div>
 
       <div style={{
@@ -1095,33 +870,13 @@ function UserRow({
         color: B.darkText,
         fontFamily: "monospace",
       }}>
-        {user.daysSinceLastPurchase !== null ? user.daysSinceLastPurchase : "ΓÇö"}
+        {user.daysSinceLastPurchase !== null ? user.daysSinceLastPurchase : "—"}
       </div>
-
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onAction}
-        style={{
-          padding: "0.5rem 1rem",
-          borderRadius: "8px",
-          background: B.seafoam,
-          color: "white",
-          border: "none",
-          fontSize: "0.75rem",
-          fontWeight: 600,
-          cursor: "pointer",
-          fontFamily: "var(--font-inter)",
-        }}
-      >
-        <Gift size={14} style={{ display: "inline", marginRight: "0.25rem" }} />
-        Win-back
-      </motion.button>
     </motion.div>
   );
 }
 
-// Campaign Modal Component
+// Campaign Modal Component (Reduced Size)
 function CampaignModal({ 
   segment, 
   onClose 
@@ -1130,10 +885,10 @@ function CampaignModal({
   onClose: () => void;
 }) {
   const [sending, setSending] = useState(false);
+  const [showFullPreview, setShowFullPreview] = useState(false);
 
   const handleSendCampaign = async () => {
     setSending(true);
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
     alert(`Campaign sent to ${segment.count} users with ${segment.value}!`);
     setSending(false);
@@ -1141,6 +896,7 @@ function CampaignModal({
   };
 
   const productRecommendation = getProductRecommendation(segment.value);
+  const emailPreview = `Hi [Name], we noticed your ${segment.value.toLowerCase()} hair needs special care. Try our ${productRecommendation.name} with 20% OFF!`;
 
   return (
     <motion.div
@@ -1170,9 +926,9 @@ function CampaignModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "white",
-          borderRadius: "24px",
-          padding: "2.5rem",
-          maxWidth: "600px",
+          borderRadius: "20px",
+          padding: "1.25rem",
+          maxWidth: "420px",
           width: "90%",
           boxShadow: "0 25px 70px rgba(13, 59, 68, 0.4)",
         }}
@@ -1182,24 +938,24 @@ function CampaignModal({
           display: "flex", 
           justifyContent: "space-between", 
           alignItems: "flex-start",
-          marginBottom: "1.5rem"
+          marginBottom: "1rem"
         }}>
           <div>
             <h3 style={{
               fontFamily: "var(--font-playfair), serif",
-              fontSize: "1.75rem",
+              fontSize: "1.35rem",
               fontWeight: 400,
               color: B.darkText,
-              marginBottom: "0.5rem",
+              marginBottom: "0.25rem",
             }}>
-              Launch Segment Campaign
+              Launch Campaign
             </h3>
             <p style={{
-              fontSize: "0.85rem",
+              fontSize: "0.8rem",
               color: B.bodyText,
               fontFamily: "var(--font-inter)",
             }}>
-              Personalized marketing for targeted users
+              Personalized marketing
             </p>
           </div>
           <motion.button
@@ -1210,51 +966,46 @@ function CampaignModal({
               background: B.lightGray,
               border: "none",
               borderRadius: "50%",
-              width: "36px",
-              height: "36px",
+              width: "32px",
+              height: "32px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
             }}
           >
-            <X size={18} color={B.darkText} />
+            <X size={16} color={B.darkText} />
           </motion.button>
         </div>
 
         {/* Segment Summary */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          style={{
-            background: `${B.seafoam}10`,
-            border: `2px solid ${B.seafoam}30`,
-            borderRadius: "16px",
-            padding: "1.5rem",
-            marginBottom: "1.5rem",
-          }}
-        >
+        <div style={{
+          background: `${B.seafoam}10`,
+          border: `2px solid ${B.seafoam}30`,
+          borderRadius: "12px",
+          padding: "1rem",
+          marginBottom: "1rem",
+        }}>
           <div style={{
             display: "flex",
             alignItems: "center",
-            gap: "0.75rem",
-            marginBottom: "1rem",
+            gap: "0.5rem",
+            marginBottom: "0.5rem",
           }}>
             <div style={{
-              width: "48px",
-              height: "48px",
-              borderRadius: "12px",
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
               background: B.seafoam,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}>
-              <Target size={24} color="white" />
+              <Target size={18} color="white" />
             </div>
             <div>
               <div style={{
-                fontSize: "0.7rem",
+                fontSize: "0.65rem",
                 fontWeight: 700,
                 color: B.seafoam,
                 textTransform: "uppercase",
@@ -1264,7 +1015,7 @@ function CampaignModal({
                 Target Segment
               </div>
               <div style={{
-                fontSize: "1.1rem",
+                fontSize: "1rem",
                 fontWeight: 600,
                 color: B.darkText,
                 fontFamily: "var(--font-inter)",
@@ -1274,35 +1025,30 @@ function CampaignModal({
             </div>
           </div>
           <div style={{
-            fontSize: "0.85rem",
+            fontSize: "0.8rem",
             color: B.bodyText,
             fontFamily: "var(--font-inter)",
           }}>
-            Targeting <span style={{ fontWeight: 700, color: B.seafoam }}>{segment.count} users</span> with {segment.type.toLowerCase().replace("Types", "").replace("Levels", "")} profile: <span style={{ fontWeight: 600 }}>{segment.value}</span>
+            Targeting <span style={{ fontWeight: 700, color: B.seafoam }}>{segment.count} users</span>
           </div>
-        </motion.div>
+        </div>
 
         {/* Product Recommendation */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          style={{
-            background: B.cream,
-            borderRadius: "16px",
-            padding: "1.5rem",
-            marginBottom: "1.5rem",
-          }}
-        >
+        <div style={{
+          background: B.cream,
+          borderRadius: "12px",
+          padding: "1rem",
+          marginBottom: "1rem",
+        }}>
           <div style={{
             display: "flex",
             alignItems: "center",
             gap: "0.5rem",
-            marginBottom: "1rem",
+            marginBottom: "0.5rem",
           }}>
-            <Sparkles size={18} color={B.seafoam} />
+            <Sparkles size={16} color={B.seafoam} />
             <h4 style={{
-              fontSize: "0.85rem",
+              fontSize: "0.75rem",
               fontWeight: 700,
               color: B.darkText,
               textTransform: "uppercase",
@@ -1313,39 +1059,34 @@ function CampaignModal({
             </h4>
           </div>
           <div style={{
-            fontSize: "1.15rem",
+            fontSize: "1rem",
             fontWeight: 600,
             color: B.darkText,
-            marginBottom: "0.5rem",
+            marginBottom: "0.25rem",
             fontFamily: "var(--font-inter)",
           }}>
             {productRecommendation.name}
           </div>
           <p style={{
-            fontSize: "0.8rem",
+            fontSize: "0.75rem",
             color: B.bodyText,
-            lineHeight: "1.5",
+            lineHeight: "1.4",
             fontFamily: "var(--font-inter)",
           }}>
-            {productRecommendation.description}
+            {productRecommendation.description.substring(0, 80)}...
           </p>
-        </motion.div>
+        </div>
 
-        {/* Campaign Preview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          style={{
-            background: B.offWhite,
-            borderRadius: "12px",
-            padding: "1rem",
-            marginBottom: "1.5rem",
-            border: `1px solid ${B.lightGray}`,
-          }}
-        >
+        {/* Email Preview */}
+        <div style={{
+          background: B.offWhite,
+          borderRadius: "10px",
+          padding: "0.75rem",
+          marginBottom: "1rem",
+          border: `1px solid ${B.lightGray}`,
+        }}>
           <div style={{
-            fontSize: "0.7rem",
+            fontSize: "0.65rem",
             fontWeight: 700,
             color: B.bodyText,
             textTransform: "uppercase",
@@ -1356,17 +1097,37 @@ function CampaignModal({
             Email Preview
           </div>
           <div style={{
-            fontSize: "0.8rem",
+            fontSize: "0.75rem",
             color: B.darkText,
             fontFamily: "var(--font-inter)",
             fontStyle: "italic",
+            overflow: showFullPreview ? "visible" : "hidden",
+            maxHeight: showFullPreview ? "none" : "3.6em",
+            lineHeight: "1.2em",
           }}>
-            "Hi [Name], we noticed your {segment.value.toLowerCase()} hair needs special care. Try our {productRecommendation.name} with 20% OFF!"
+            {emailPreview}
           </div>
-        </motion.div>
+          {emailPreview.length > 100 && (
+            <button
+              onClick={() => setShowFullPreview(!showFullPreview)}
+              style={{
+                marginTop: "0.5rem",
+                fontSize: "0.7rem",
+                color: B.seafoam,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontFamily: "var(--font-inter)",
+              }}
+            >
+              {showFullPreview ? "Show less" : "View full preview"}
+            </button>
+          )}
+        </div>
 
         {/* Action Buttons */}
-        <div style={{ display: "flex", gap: "1rem" }}>
+        <div style={{ display: "flex", gap: "0.75rem" }}>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -1374,12 +1135,13 @@ function CampaignModal({
             disabled={sending}
             style={{
               flex: 1,
-              padding: "1rem",
-              borderRadius: "12px",
+              padding: "0",
+              height: "36px",
+              borderRadius: "10px",
               background: B.lightGray,
               color: B.darkText,
               border: "none",
-              fontSize: "0.9rem",
+              fontSize: "0.85rem",
               fontWeight: 600,
               cursor: sending ? "not-allowed" : "pointer",
               fontFamily: "var(--font-inter)",
@@ -1394,12 +1156,13 @@ function CampaignModal({
             disabled={sending}
             style={{
               flex: 2,
-              padding: "1rem",
-              borderRadius: "12px",
+              padding: "0",
+              height: "36px",
+              borderRadius: "10px",
               background: sending ? B.midGray : `linear-gradient(135deg, ${B.seafoam}, ${B.forestTeal})`,
               color: "white",
               border: "none",
-              fontSize: "0.9rem",
+              fontSize: "0.85rem",
               fontWeight: 600,
               cursor: sending ? "not-allowed" : "pointer",
               fontFamily: "var(--font-inter)",
@@ -1415,19 +1178,19 @@ function CampaignModal({
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   style={{
-                    width: "16px",
-                    height: "16px",
+                    width: "14px",
+                    height: "14px",
                     borderRadius: "50%",
                     border: "2px solid white",
                     borderTopColor: "transparent",
                   }}
                 />
-                Sending Campaign...
+                Sending...
               </>
             ) : (
               <>
-                <Send size={18} />
-                Send Personalized Campaign
+                <Send size={16} />
+                Send Campaign
               </>
             )}
           </motion.button>
@@ -1437,192 +1200,7 @@ function CampaignModal({
   );
 }
 
-// Win-back Modal Component
-function WinBackModal({ 
-  user, 
-  onClose 
-}: { 
-  user: UserAnalysis; 
-  onClose: () => void;
-}) {
-  const [sending, setSending] = useState(false);
-
-  const handleSendCoupon = async () => {
-    setSending(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    alert(`Win-back coupon sent to ${user.email}!`);
-    setSending(false);
-    onClose();
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: "rgba(13, 59, 68, 0.6)",
-        backdropFilter: "blur(8px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-      }}
-    >
-      <motion.div
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: "white",
-          borderRadius: "20px",
-          padding: "2rem",
-          maxWidth: "500px",
-          width: "90%",
-          boxShadow: "0 20px 60px rgba(13, 59, 68, 0.3)",
-        }}
-      >
-        <h3 style={{
-          fontFamily: "var(--font-playfair), serif",
-          fontSize: "1.5rem",
-          fontWeight: 400,
-          color: B.darkText,
-          marginBottom: "1rem",
-        }}>
-          Send Win-back Coupon
-        </h3>
-
-        <div style={{
-          background: B.cream,
-          borderRadius: "12px",
-          padding: "1rem",
-          marginBottom: "1.5rem",
-        }}>
-          <div style={{ marginBottom: "0.5rem" }}>
-            <span style={{ 
-              fontSize: "0.75rem", 
-              color: B.bodyText,
-              fontFamily: "monospace",
-            }}>
-              Customer:
-            </span>
-            <div style={{
-              fontSize: "0.95rem",
-              fontWeight: 600,
-              color: B.darkText,
-              fontFamily: "var(--font-inter)",
-            }}>
-              {user.name}
-            </div>
-          </div>
-          <div>
-            <span style={{ 
-              fontSize: "0.75rem", 
-              color: B.bodyText,
-              fontFamily: "monospace",
-            }}>
-              Email:
-            </span>
-            <div style={{
-              fontSize: "0.85rem",
-              color: B.darkText,
-              fontFamily: "monospace",
-            }}>
-              {user.email}
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          background: `${B.seafoam}10`,
-          border: `1px solid ${B.seafoam}30`,
-          borderRadius: "12px",
-          padding: "1rem",
-          marginBottom: "1.5rem",
-        }}>
-          <div style={{
-            fontSize: "0.85rem",
-            color: B.bodyText,
-            marginBottom: "0.5rem",
-            fontFamily: "var(--font-inter)",
-          }}>
-            Coupon Details:
-          </div>
-          <div style={{
-            fontSize: "1.25rem",
-            fontWeight: 700,
-            color: B.seafoam,
-            fontFamily: "monospace",
-          }}>
-            20% OFF
-          </div>
-          <div style={{
-            fontSize: "0.75rem",
-            color: B.bodyText,
-            fontFamily: "var(--font-inter)",
-          }}>
-            Valid for 30 days ΓÇó Minimum purchase Γé╣1,000
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: "0.75rem" }}>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onClose}
-            disabled={sending}
-            style={{
-              flex: 1,
-              padding: "0.75rem",
-              borderRadius: "12px",
-              background: B.lightGray,
-              color: B.darkText,
-              border: "none",
-              fontSize: "0.85rem",
-              fontWeight: 600,
-              cursor: sending ? "not-allowed" : "pointer",
-              fontFamily: "var(--font-inter)",
-            }}
-          >
-            Cancel
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleSendCoupon}
-            disabled={sending}
-            style={{
-              flex: 1,
-              padding: "0.75rem",
-              borderRadius: "12px",
-              background: sending ? B.midGray : B.seafoam,
-              color: "white",
-              border: "none",
-              fontSize: "0.85rem",
-              fontWeight: 600,
-              cursor: sending ? "not-allowed" : "pointer",
-              fontFamily: "var(--font-inter)",
-            }}
-          >
-            {sending ? "Sending..." : "Send Coupon"}
-          </motion.button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-// NEW COMPONENTS
-
-// Customer Onboarding Line Chart
+// Customer Onboarding Line Chart (Last 2 Months)
 function CustomerOnboardingChart({ data }: { data: Array<{ month: string; count: number }> }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 });
@@ -1637,9 +1215,10 @@ function CustomerOnboardingChart({ data }: { data: Array<{ month: string; count:
         background: "white",
         borderRadius: "20px",
         padding: "1.5rem",
-        marginBottom: "1.5rem",
         border: `1px solid ${B.lightGray}`,
         boxShadow: "0 8px 32px rgba(13, 59, 68, 0.08)",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <h2 style={{
@@ -1649,7 +1228,7 @@ function CustomerOnboardingChart({ data }: { data: Array<{ month: string; count:
         color: B.darkText,
         marginBottom: "0.5rem",
       }}>
-        Customer Onboarding — New Accounts Over Time
+        Customer Onboarding
       </h2>
       <p style={{
         fontSize: "0.85rem",
@@ -1657,7 +1236,7 @@ function CustomerOnboardingChart({ data }: { data: Array<{ month: string; count:
         fontFamily: "var(--font-inter)",
         marginBottom: "1.5rem",
       }}>
-        Last 12 months growth trend
+        Last 2 Months
       </p>
 
       <ResponsiveContainer width="100%" height={300}>
@@ -1693,7 +1272,7 @@ function CustomerOnboardingChart({ data }: { data: Array<{ month: string; count:
   );
 }
 
-// Membership Distribution Donut Chart + Tier Stats
+// Membership Distribution Donut Chart (With Percentage Labels)
 function MembershipDistribution({ data, totalUsers }: { 
   data: { bronze: number; silver: number; gold: number; none: number };
   totalUsers: number;
@@ -1708,11 +1287,10 @@ function MembershipDistribution({ data, totalUsers }: {
     { name: "None", value: data.none, color: B.midGray },
   ];
 
-  const tierLabels: Record<string, string> = {
-    "Gold": "Premium Members",
-    "Silver": "Growing Members",
-    "Bronze": "Entry Members",
-    "None": "Unregistered",
+  // Custom label renderer to show percentage
+  const renderCustomLabel = (entry: any) => {
+    const percentage = totalUsers > 0 ? ((entry.value / totalUsers) * 100).toFixed(1) : "0";
+    return `${percentage}%`;
   };
 
   return (
@@ -1725,9 +1303,10 @@ function MembershipDistribution({ data, totalUsers }: {
         background: "white",
         borderRadius: "20px",
         padding: "1.5rem",
-        marginBottom: "1.5rem",
         border: `1px solid ${B.lightGray}`,
         boxShadow: "0 8px 32px rgba(13, 59, 68, 0.08)",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <h2 style={{
@@ -1740,74 +1319,33 @@ function MembershipDistribution({ data, totalUsers }: {
         Membership Tier Breakdown
       </h2>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", alignItems: "center" }}>
-        {/* Donut Chart */}
-        <ResponsiveContainer width="100%" height={250}>
+      {/* Donut Chart Only - Centered */}
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <ResponsiveContainer width="100%" height={350}>
           <PieChart>
             <Pie
               data={chartData}
               cx="50%"
               cy="50%"
-              innerRadius={60}
-              outerRadius={90}
+              innerRadius={80}
+              outerRadius={130}
               paddingAngle={5}
               dataKey="value"
+              label={renderCustomLabel}
+              labelLine={false}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip 
+              formatter={(value: any, name: any) => {
+                const percentage = totalUsers > 0 ? ((value / totalUsers) * 100).toFixed(1) : "0";
+                return [`${value} (${percentage}%)`, name];
+              }}
+            />
           </PieChart>
         </ResponsiveContainer>
-
-        {/* Tier Stats */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          {chartData.map((tier) => {
-            const percentage = totalUsers > 0 ? ((tier.value / totalUsers) * 100).toFixed(1) : "0";
-            return (
-              <div key={tier.name} style={{
-                background: B.cream,
-                borderRadius: "12px",
-                padding: "1rem",
-                border: `2px solid ${tier.color}30`,
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
-                  <div style={{
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "50%",
-                    background: tier.color,
-                  }} />
-                  <span style={{
-                    fontSize: "0.9rem",
-                    fontWeight: 600,
-                    color: B.darkText,
-                    fontFamily: "var(--font-inter)",
-                  }}>
-                    {tier.name}
-                  </span>
-                </div>
-                <div style={{
-                  fontSize: "1.5rem",
-                  fontWeight: 700,
-                  color: tier.color,
-                  fontFamily: "monospace",
-                  marginBottom: "0.25rem",
-                }}>
-                  {tier.value}
-                </div>
-                <div style={{
-                  fontSize: "0.75rem",
-                  color: B.bodyText,
-                  fontFamily: "var(--font-inter)",
-                }}>
-                  {percentage}% • {tierLabels[tier.name]}
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
     </motion.div>
   );
@@ -2155,7 +1693,7 @@ function CustomerActivityTable({ data }: { data: CRMData["customerTable"] }) {
                         gap: "0.25rem",
                       }}
                     >
-                      {isSent ? <><Check size={14} /> Sent</> : <><Gift size={14} /> Gift Coupon</>}
+                      {isSent ? <><Check size={14} /> Sent</> : <>Gift Coupon</>}
                     </button>
                   </td>
                 </tr>
@@ -2640,56 +2178,6 @@ function ActionsLog({ data }: { data: CRMData["actionsLog"] }) {
 
 // Helper Functions
 
-function getRecommendedAction(type: string, category: string): string {
-  const actions: Record<string, Record<string, string>> = {
-    scalp: {
-      oily: "Target with Clarifying Shampoo Campaign",
-      dry: "Promote Hydrating Scalp Serums",
-      normal: "Upsell Maintenance Bundles",
-      sensitive: "Recommend Gentle, Fragrance-Free Products",
-      dandruff: "Push Anti-Dandruff Treatment Kits",
-    },
-    porosity: {
-      low: "Suggest Lightweight, Penetrating Oils",
-      medium: "Offer Balanced Protein-Moisture Products",
-      high: "Promote Deep Conditioning Treatments",
-    },
-    hairType: {
-      straight: "Promote Volumizing & Shine Products",
-      wavy: "Offer Curl-Enhancing & Anti-Frizz Treatments",
-      curly: "Push Moisture-Rich Curl Definers",
-      coily: "Recommend Deep Hydration & Detangling Kits",
-    },
-  };
-
-  return actions[category]?.[type.toLowerCase()] || "Personalize Product Recommendations";
-}
-
-function getTopProduct(type: string, category: string): string {
-  const products: Record<string, Record<string, string>> = {
-    scalp: {
-      oily: "Clarifying Shampoo",
-      dry: "Hydrating Serum",
-      normal: "Maintenance Kit",
-      sensitive: "Gentle Cleanser",
-      dandruff: "Detox Oil",
-    },
-    porosity: {
-      low: "Penetrating Oil",
-      medium: "Protein Treatment",
-      high: "Deep Conditioner",
-    },
-    hairType: {
-      straight: "Volume Booster",
-      wavy: "Wave Enhancer",
-      curly: "Curl Definer",
-      coily: "Coil Hydrator",
-    },
-  };
-
-  return products[category]?.[type.toLowerCase()] || "Hair Care Bundle";
-}
-
 function getProductRecommendation(segmentValue: string): { name: string; description: string } {
   const recommendations: Record<string, { name: string; description: string }> = {
     "Oily": {
@@ -2723,6 +2211,22 @@ function getProductRecommendation(segmentValue: string): { name: string; descrip
     "High": {
       name: "Deep Conditioning Repair Mask",
       description: "Intensive treatment for high porosity hair that seals cuticles and locks in moisture. Repairs damage and prevents future moisture loss."
+    },
+    "Straight": {
+      name: "Volume Booster",
+      description: "Lightweight formula that adds body and shine to straight hair without weighing it down."
+    },
+    "Wavy": {
+      name: "Wave Enhancer",
+      description: "Defines and enhances natural waves while controlling frizz for beautiful, bouncy texture."
+    },
+    "Curly": {
+      name: "Curl Definer",
+      description: "Moisture-rich formula that defines curls and reduces frizz for gorgeous, springy curls."
+    },
+    "Coily": {
+      name: "Coil Hydrator",
+      description: "Deep hydration and detangling treatment specifically formulated for coily hair textures."
     },
   };
 

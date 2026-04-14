@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, X, Plus, Check } from "lucide-react";
+import { Upload, X, Plus, Check, Image as ImageIcon } from "lucide-react";
 import axios from "axios";
 
 const B = {
@@ -37,40 +37,12 @@ const HAIR_TYPES = ["straight", "wavy", "curly", "coily"];
 const POROSITY_LEVELS = ["low", "medium", "high"];
 const SCALP_CONDITIONS = ["oily", "dry", "normal", "sensitive"];
 
-// Helper to validate and extract direct image URL
-const isValidImageUrl = (url: string): boolean => {
-  try {
-    const urlObj = new URL(url);
-    // Check if it's a direct image URL (not a Google search result)
-    if (urlObj.hostname.includes('google.com') && urlObj.pathname.includes('imgres')) {
-      return false;
-    }
-    // Check if URL ends with common image extensions
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
-    const pathname = urlObj.pathname.toLowerCase();
-    return imageExtensions.some(ext => pathname.includes(ext)) || pathname.includes('/wp-content/uploads/');
-  } catch {
-    return false;
-  }
-};
-
-// Extract direct image URL from Google Images URL
-const extractDirectImageUrl = (url: string): string => {
-  try {
-    const urlObj = new URL(url);
-    if (urlObj.hostname.includes('google.com') && urlObj.searchParams.has('imgurl')) {
-      return decodeURIComponent(urlObj.searchParams.get('imgurl') || '');
-    }
-    return url;
-  } catch {
-    return url;
-  }
-};
-
 export default function AddProductPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [ingredientInput, setIngredientInput] = useState("");
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
@@ -90,13 +62,53 @@ export default function AddProductPage() {
   });
 
   const handleInputChange = (field: keyof ProductFormData, value: any) => {
-    // Special handling for image URL
-    if (field === 'imageUrl' && typeof value === 'string') {
-      const cleanedUrl = extractDirectImageUrl(value);
-      setFormData((prev) => ({ ...prev, [field]: cleanedUrl }));
-    } else {
-      setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Handle image file upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file');
+      return;
     }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size should be less than 5MB');
+      return;
+    }
+
+    setUploadingImage(true);
+
+    try {
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setImagePreview(base64String);
+        setFormData((prev) => ({ ...prev, imageUrl: base64String }));
+        setUploadingImage(false);
+      };
+      reader.onerror = () => {
+        alert('Failed to read image file');
+        setUploadingImage(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image');
+      setUploadingImage(false);
+    }
+  };
+
+  // Remove uploaded image
+  const handleRemoveImage = () => {
+    setImagePreview("");
+    setFormData((prev) => ({ ...prev, imageUrl: "" }));
   };
 
   const handleAddIngredient = () => {
@@ -326,47 +338,125 @@ export default function AddProductPage() {
                 </div>
               </div>
 
-              {/* Image URL */}
+              {/* Image Upload */}
               <div>
                 <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, color: B.bodyText, marginBottom: "0.4rem" }}>
-                  Image URL *
+                  Product Image *
                 </label>
-                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                  <div style={{ flex: 1 }}>
-                    <input
-                      type="url"
-                      required
-                      value={formData.imageUrl}
-                      onChange={(e) => handleInputChange("imageUrl", e.target.value)}
-                      placeholder="https://example.com/product-image.jpg"
+                
+                {!imagePreview ? (
+                  <div>
+                    <label
+                      htmlFor="image-upload"
                       style={{
-                        width: "100%",
-                        padding: "0.65rem 0.85rem",
-                        border: `1px solid ${B.lightGray}`,
-                        borderRadius: "6px",
-                        fontSize: "0.85rem",
-                        fontFamily: "var(--font-inter), sans-serif",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "2rem",
+                        border: `2px dashed ${B.lightGray}`,
+                        borderRadius: "8px",
+                        cursor: uploadingImage ? "not-allowed" : "pointer",
+                        background: B.cream,
+                        transition: "all 0.2s",
                       }}
-                    />
-                    <p style={{ fontSize: "0.7rem", color: B.midGray, marginTop: "0.4rem" }}>
-                      Paste a direct image URL. Google Images links will be auto-converted.
-                    </p>
+                      onMouseEnter={(e) => {
+                        if (!uploadingImage) {
+                          e.currentTarget.style.borderColor = B.seafoam;
+                          e.currentTarget.style.background = `${B.seafoam}10`;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = B.lightGray;
+                        e.currentTarget.style.background = B.cream;
+                      }}
+                    >
+                      <input
+                        id="image-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={uploadingImage}
+                        style={{ display: "none" }}
+                        required={!formData.imageUrl}
+                      />
+                      {uploadingImage ? (
+                        <>
+                          <div
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "50%",
+                              border: `3px solid ${B.lightGray}`,
+                              borderTopColor: B.seafoam,
+                              animation: "spin 0.8s linear infinite",
+                              marginBottom: "1rem",
+                            }}
+                          />
+                          <p style={{ fontSize: "0.85rem", color: B.bodyText, fontWeight: 600 }}>
+                            Uploading image...
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={40} color={B.seafoam} style={{ marginBottom: "1rem" }} />
+                          <p style={{ fontSize: "0.85rem", color: B.bodyText, fontWeight: 600, marginBottom: "0.25rem" }}>
+                            Click to upload product image
+                          </p>
+                          <p style={{ fontSize: "0.7rem", color: B.midGray }}>
+                            PNG, JPG, WEBP up to 5MB
+                          </p>
+                        </>
+                      )}
+                    </label>
                   </div>
-                  {formData.imageUrl && (
+                ) : (
+                  <div style={{ position: "relative", display: "inline-block" }}>
                     <div
                       style={{
-                        width: "60px",
-                        height: "60px",
-                        borderRadius: "8px",
-                        background: `url(${formData.imageUrl})`,
+                        width: "200px",
+                        height: "200px",
+                        borderRadius: "12px",
+                        background: `url(${imagePreview})`,
                         backgroundSize: "cover",
                         backgroundPosition: "center",
-                        border: `1px solid ${B.lightGray}`,
-                        flexShrink: 0,
+                        border: `2px solid ${B.lightGray}`,
                       }}
                     />
-                  )}
-                </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      style={{
+                        position: "absolute",
+                        top: "8px",
+                        right: "8px",
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "50%",
+                        background: "rgba(239, 68, 68, 0.9)",
+                        border: "none",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "all 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(239, 68, 68, 1)";
+                        e.currentTarget.style.transform = "scale(1.1)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "rgba(239, 68, 68, 0.9)";
+                        e.currentTarget.style.transform = "scale(1)";
+                      }}
+                    >
+                      <X size={18} color="white" />
+                    </button>
+                    <p style={{ fontSize: "0.7rem", color: B.midGray, marginTop: "0.5rem" }}>
+                      Click the X button to change image
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

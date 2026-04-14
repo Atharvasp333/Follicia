@@ -297,14 +297,23 @@ export default function InventoryManagementPage() {
                     width: 48,
                     height: 48,
                     borderRadius: 10,
-                    background: "#F0F4F3",
+                    background: product.imageUrl ? "#F0F4F3" : "#F0F4F3",
                     backgroundImage: product.imageUrl ? `url(${product.imageUrl})` : "none",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
                     flexShrink: 0,
                     border: "2px solid #E8F0ED",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
                   }}
-                />
+                >
+                  {!product.imageUrl && (
+                    <Package size={20} color="#9CA3AF" />
+                  )}
+                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
