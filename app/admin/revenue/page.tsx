@@ -39,6 +39,7 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
+import { formatCurrency } from "@/lib/price-utils";
 
 const B = {
   teal: "#0D3B44",
@@ -438,13 +439,6 @@ export default function RevenuePage() {
   const avgMargin = recentOrdersSummary.totalRevenue > 0
     ? (recentOrdersSummary.totalProfit / recentOrdersSummary.totalRevenue) * 100
     : 0;
-
-  const formatCurrency = (amount: number) => {
-    if (amount >= 100000) {
-      return `₹${(amount / 100000).toFixed(2)}L`;
-    }
-    return `₹${amount.toLocaleString("en-IN")}`;
-  };
 
   const openOrderModal = (order: Order) => {
     setSelectedOrder(order);

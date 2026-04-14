@@ -21,6 +21,7 @@ import ProductImage from "@/components/ProductImage";
 import Toast from "@/components/Toast";
 import { useCart } from "@/contexts/CartContext";
 import { useInventoryStore } from "@/store/useInventoryStore";
+import { formatPrice } from "@/lib/price-utils";
 
 /* ══════════════════════════════════════════════════════════════
    BRAND CONSTANTS — extracted 1:1 from globals.css / page.tsx
@@ -251,7 +252,7 @@ function ProductCard({
       productId: product.id,
       name: product.name,
       price: product.price,
-      priceDisplay: product.priceDisplay || `₹${product.price.toLocaleString("en-IN")}`,
+      priceDisplay: product.priceDisplay || formatPrice(product.price),
       imageUrl: product.imageUrl,
       category: product.category,
     });
@@ -575,7 +576,7 @@ function ProductModal({
       productId: product.id,
       name: product.name,
       price: product.price,
-      priceDisplay: product.priceDisplay || `₹${product.price.toLocaleString("en-IN")}`,
+      priceDisplay: product.priceDisplay || formatPrice(product.price),
       imageUrl: product.imageUrl,
       category: product.category,
     });

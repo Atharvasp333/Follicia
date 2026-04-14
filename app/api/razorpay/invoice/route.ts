@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { razorpay } from "@/lib/razorpay";
 import { prisma } from "@/lib/prisma";
 import { awardLoyaltyPoints } from "@/lib/loyalty";
+import { convertToPaise } from "@/lib/price-utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
     const lineItems = order.items.map((item) => ({
       name: item.product.name,
       description: item.product.description || item.product.tagline || "Premium hair care product",
-      amount: Math.round(item.price * 100), // Convert to paise
+      amount: convertToPaise(item.price), // Convert to paise
       currency: "INR",
       quantity: item.quantity,
     }));
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
       lineItems.push({
         name: `Shipping - ${order.shippingMethod === 'express' ? 'Express' : 'Standard'}`,
         description: "Delivery charges",
-        amount: Math.round(order.shippingCost * 100),
+        amount: convertToPaise(order.shippingCost),
         currency: "INR",
         quantity: 1,
       });

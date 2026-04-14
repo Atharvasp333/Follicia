@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import ProductImage from "@/components/ProductImage";
 import { useCart } from "@/contexts/CartContext";
 import Toast from "@/components/Toast";
+import { formatPrice } from "@/lib/price-utils";
 
 type Product = {
   id: string;
@@ -42,7 +43,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
       productId: product.id,
       name: product.name,
       price: product.price,
-      priceDisplay: product.priceDisplay || `₹${product.price.toLocaleString("en-IN")}`,
+      priceDisplay: product.priceDisplay || formatPrice(product.price),
       imageUrl: product.imageUrl || "/placeholder-product.jpg",
       category: product.category,
       quantity,

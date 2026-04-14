@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { formatPrice } from "@/lib/price-utils";
 import ShopClient, { Product } from "./ShopClient";
 
 export const metadata: Metadata = {
@@ -50,7 +51,7 @@ function mapDbProductToUI(dbProduct: any): Product {
     name: dbProduct.name,
     tagline: dbProduct.tagline || "Premium hair care",
     price: dbProduct.price,
-    priceDisplay: dbProduct.priceDisplay || `₹${dbProduct.price.toLocaleString("en-IN")}`,
+    priceDisplay: dbProduct.priceDisplay || formatPrice(dbProduct.price),
     imageUrl: dbProduct.imageUrl,
     category: dbProduct.category || "Treatments",
     hairType: dbProduct.hairType || [],

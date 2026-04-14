@@ -8,13 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
-    "migrate:stats": "tsx scripts/migrate-product-stats.ts",
-    "boost:data": "tsx scripts/boost-conversions.ts",
     "init:loyalty": "tsx prisma/init-loyalty-points.ts",
     "seed:coupons": "tsx prisma/seed-reward-coupons.ts",
-    "seed:loyalty-points": "tsx scripts/seed-loyalty-points.ts",
-    "check:points": "tsx scripts/check-user-points.ts",
-    "verify:feedback": "tsx scripts/verify-feedback-seeding.ts",
+    "backup:prices": "tsx scripts/backup-products.ts",
+    "restore:prices": "tsx scripts/restore-products.ts",
+    "normalize:prices": "tsx scripts/normalize-prices.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

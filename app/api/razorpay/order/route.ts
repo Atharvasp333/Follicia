@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { convertToPaise } from "@/lib/price-utils";
 
 // Verify environment variables are loaded at route level
 console.log("🔑 Loading Keys:", {
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
     const { razorpay } = await import("@/lib/razorpay");
 
     // Convert amount to paise (Razorpay requires amount in smallest currency unit)
-    const amountInPaise = Math.round(Number(amount) * 100);
+    const amountInPaise = convertToPaise(Number(amount));
 
     console.log("💳 Creating Razorpay order:", { amountInPaise, currency: "INR" });
 
