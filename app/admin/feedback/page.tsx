@@ -58,6 +58,7 @@ export default function AdminFeedbackPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterSentiment, setFilterSentiment] = useState<string>("all");
+  const [sortOrder, setSortOrder] = useState<string>("newest");
   const [scanning, setScanning] = useState(true);
 
   useEffect(() => {
@@ -93,14 +94,28 @@ export default function AdminFeedbackPage() {
     }
   };
 
-  const filteredFeedback = feedback.filter((item) => {
-    if (filterStatus !== "all" && item.status !== filterStatus) return false;
-    if (filterCategory !== "all" && item.aiCategory !== filterCategory)
-      return false;
-    if (filterSentiment !== "all" && item.sentiment !== filterSentiment)
-      return false;
-    return true;
-  });
+  const filteredFeedback = feedback
+    .filter((item) => {
+      if (filterStatus !== "all" && item.status !== filterStatus) return false;
+      if (filterCategory !== "all" && item.aiCategory !== filterCategory)
+        return false;
+      if (filterSentiment !== "all" && item.sentiment !== filterSentiment)
+        return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      
+      if (sortOrder === "newest") {
+        return dateB - dateA; // Newest first
+      } else if (sortOrder === "oldest") {
+        return dateA - dateB; // Oldest first
+      } else if (sortOrder === "urgency") {
+        return (b.urgencyScore || 0) - (a.urgencyScore || 0); // Highest urgency first
+      }
+      return 0;
+    });
 
   const stats = {
     total: feedback.length,
@@ -505,6 +520,7 @@ export default function AdminFeedbackPage() {
             gap: "1rem",
             marginBottom: "2rem",
             flexWrap: "wrap",
+            alignItems: "center",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -568,6 +584,40 @@ export default function AdminFeedbackPage() {
             <option value="NEUTRAL">😐 Neutral</option>
             <option value="NEGATIVE">😞 Negative</option>
           </select>
+          
+          {/* Divider */}
+          <div
+            style={{
+              width: "1px",
+              height: "24px",
+              background: B.lightGray,
+              margin: "0 0.5rem",
+            }}
+          />
+          
+          {/* Sort Dropdown */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{ fontSize: "0.9rem", color: B.bodyText }}>
+              Sort:
+            </span>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              style={{
+                padding: "0.5rem 1rem",
+                borderRadius: "8px",
+                border: `1px solid ${B.lightGray}`,
+                background: "white",
+                color: B.darkText,
+                fontSize: "0.9rem",
+                cursor: "pointer",
+              }}
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="urgency">Highest Urgency</option>
+            </select>
+          </div>
         </motion.div>
 
         {/* Feedback Cards */}
