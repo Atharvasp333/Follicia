@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/banner.png" alt="Follicia Banner" width="100%" />
+  <img src="public/assets/banner.png" alt="Follicia Banner" width="100%" />
 </div>
 
 # Follicia | Full-Stack AI E-Commerce
