@@ -1,25 +1,27 @@
-![Follicia Banner](public/banner.png)
+<div align="center">
+  <img src="public/banner.png" alt="Follicia Banner" width="100%" />
+</div>
 
 # Follicia | Full-Stack AI E-Commerce
 
 A specialized D2C platform integrating biological metadata for personalized hair care and AI-powered administrative intelligence.
 
-[![Next.js](https://camo.githubusercontent.com/4590c0af4aeb1b75233885f86c7691b6ab3e34f9c253a8b0c7e0b2c174a7c23f/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4e6578742e6a732d31362e312e362d3030303030303f7374796c653d666f722d7468652d6261646765266c6f676f3d6e6578742e6a73266c6f676f436f6c6f723d7768697465)](https://nextjs.org/)
-[![TypeScript](https://camo.githubusercontent.com/773b0c90f0b7e6b8c1c1e3f0e5f5f5f5f5f5f5f5/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f547970655363726970742d3331373843363f7374796c653d666f722d7468652d6261646765266c6f676f3d74797065736372697074266c6f676f436f6c6f723d7768697465)](https://www.typescriptlang.org/)
-[![React](https://camo.githubusercontent.com/ab4c3c731a174a63df861e7b098f87ca5a2c5c8c/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f52656163742d3631444146423f7374796c653d666f722d7468652d6261646765266c6f676f3d7265616374266c6f676f436f6c6f723d626c61636b)](https://react.dev/)
-[![Prisma](https://camo.githubusercontent.com/f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f5072697366612d3244333734383f7374796c653d666f722d7468652d6261646765266c6f676f3d7072697366266c6f676f436f6c6f723d7768697465)](https://www.prisma.io/)
-[![PostgreSQL](https://camo.githubusercontent.com/29e7fc6c62f61f432d3852fbfa4190ff07f397ca/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f506f737467726553514c2d3431363945313f7374796c653d666f722d7468652d6261646765266c6f676f3d706f737467726573716c266c6f676f436f6c6f723d7768697465)](https://www.postgresql.org/)
-[![Neon](https://camo.githubusercontent.com/b5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4e656f6e44422d3030453639393f7374796c653d666f722d7468652d6261646765266c6f676f3d6e656f6e266c6f676f436f6c6f723d7768697465)](https://neon.tech/)
-[![Firebase](https://camo.githubusercontent.com/c8d13e1c596a6726b1da8475a9299ffd91f2b5aa/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f46697265626173652d4646434132383f7374796c653d666f722d7468652d6261646765266c6f676f3d6669726562617365266c6f676f436f6c6f723d626c61636b)](https://firebase.google.com/)
-[![Google AI](https://camo.githubusercontent.com/d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f47656d696e695f41492d343238354634f7374796c653d666f722d7468652d6261646765266c6f676f3d676f6f676c65266c6f676f436f6c6f723d7768697465)](https://ai.google.dev/)
-[![Razorpay](https://camo.githubusercontent.com/e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f52617a6f727061792d3043323435313f7374796c653d666f722d7468652d6261646765266c6f676f3d72617a6f72706179266c6f676f436f6c6f723d7768697465)](https://razorpay.com/)
-[![Tailwind CSS](https://camo.githubusercontent.com/a0c8c2a5c6f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f5461696c77696e645f4353532d3036423644343f7374796c653d666f722d7468652d6261646765266c6f676f3d7461696c77696e64637373266c6f676f436f6c6f723d7768697465)](https://tailwindcss.com/)
-[![Framer Motion](https://camo.githubusercontent.com/b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4672616d65725f4d6f74696f6e2d303035354646f7374796c653d666f722d7468652d6261646765266c6f676f3d6672616d6572266c6f676f436f6c6f723d7768697465)](https://www.framer.com/motion/)
-[![Zustand](https://camo.githubusercontent.com/c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f5a757374616e642d3434334533383f7374796c653d666f722d7468652d6261646765266c6f676f3d7265616374266c6f676f436f6c6f723d7768697465)](https://zustand-demo.pmnd.rs/)
-[![Recharts](https://camo.githubusercontent.com/d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f526563686172742d4646364236423f7374796c653d666f722d7468652d6261646765266c6f676f3d6368617274646f746a73266c6f676f436f6c6f723d7768697465)](https://recharts.org/)
-[![Lucide React](https://camo.githubusercontent.com/9df3f7a20b550bc911c48145e761b6f90c920290f9e45fa3dacb04860526aef6/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4c75636964655f52656163742d4635363536353f7374796c653d666f722d7468652d6261646765266c6f676f3d6c7563696465266c6f676f436f6c6f723d7768697465)](https://lucide.dev/)
-[![Radix UI](https://camo.githubusercontent.com/f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f52616469785f55492d3136313631383f7374796c653d666f722d7468652d6261646765266c6f676f3d7261646978756926266c6f676f436f6c6f723d7768697465)](https://www.radix-ui.com/)
-[![Vercel](https://camo.githubusercontent.com/e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f56657263656c2d3030303030303f7374796c653d666f722d7468652d6261646765266c6f676f3d76657263656c266c6f676f436f6c6f723d7768697465)](https://vercel.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Neon](https://img.shields.io/badge/Neon-00E599?style=for-the-badge&logo=neon&logoColor=black)](https://neon.tech/)
+[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
+[![Razorpay](https://img.shields.io/badge/Razorpay-0C2451?style=for-the-badge&logo=razorpay&logoColor=3395FF)](https://razorpay.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Framer Motion](https://img.shields.io/badge/Framer%20Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
+[![Zustand](https://img.shields.io/badge/Zustand-443E38?style=for-the-badge&logo=react&logoColor=white)](https://zustand-demo.pmnd.rs/)
+[![Recharts](https://img.shields.io/badge/Recharts-FF6B6B?style=for-the-badge&logo=chartdotjs&logoColor=white)](https://recharts.org/)
+[![Lucide React](https://img.shields.io/badge/Lucide%20React-F56565?style=for-the-badge&logo=lucide&logoColor=white)](https://lucide.dev/)
+[![Radix UI](https://img.shields.io/badge/Radix%20UI-161618?style=for-the-badge&logo=radixui&logoColor=white)](https://www.radix-ui.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 
 ---
 
@@ -566,5 +568,3 @@ We welcome contributions to Follicia! Please follow these guidelines:
 ## License
 
 This project is private and proprietary.
-
----
