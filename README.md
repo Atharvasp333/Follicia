@@ -57,7 +57,7 @@ A specialized D2C platform integrating biological metadata for personalized hair
 ### AI Feedback Intelligence
 
 **NLP Pipeline**
-- Gemini 1.5 Flash integration for unstructured feedback processing
+- Gemini 2.5 Flash integration for unstructured feedback processing
 - Raw comments sent with structured prompts for categorization and analysis
 - Automated extraction of business insights from customer text
 
@@ -128,7 +128,7 @@ A specialized D2C platform integrating biological metadata for personalized hair
 | **Frontend** | Next.js 14 (App Router), TypeScript, Framer Motion, Tailwind CSS 4 |
 | **Backend** | Node.js Server Actions, Prisma ORM 7.4.2 |
 | **Database** | PostgreSQL (Neon), Firebase Auth |
-| **AI & APIs** | Google Gemini 1.5 Flash, Razorpay Payment Gateway |
+| **AI & APIs** | Google Gemini 2.5 Flash, Razorpay Payment Gateway |
 | **State Management** | Zustand, React Hook Form |
 | **UI Components** | Radix UI, Lucide Icons, Recharts |
 | **Deployment** | Vercel (Edge Runtime) |
@@ -260,7 +260,7 @@ The application will be available at `http://localhost:3000`.
 
 ## AI Integration Details
 
-### Quiz Analysis (Gemini 1.5 Flash)
+### Quiz Analysis (Gemini 2.5 Flash)
 
 | Output Field | Type | Description |
 |--------------|------|-------------|
