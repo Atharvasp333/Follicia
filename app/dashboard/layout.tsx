@@ -139,16 +139,16 @@ function DashboardSidebar({
           style={{
             width: "32px",
             height: "32px",
-            borderRadius: "50%",
-            background: "linear-gradient(135deg,#0D3B44,#2A9D8F)",
-            border: "1.5px solid rgba(212,175,55,0.4)",
+            borderRadius: "6px",
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.12)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
           }}
         >
-          <Leaf size={14} color="#D4AF37" />
+          <Leaf size={14} color="#2A9D8F" />
         </div>
         <div>
           <div
@@ -157,22 +157,20 @@ function DashboardSidebar({
               fontWeight: 700,
               fontSize: "1rem",
               color: "#F4F7F5",
-              letterSpacing: "0.05em",
+              letterSpacing: "0.02em",
             }}
           >
             Follicia
           </div>
           <div
             style={{
-              fontSize: "0.62rem",
-              color: "rgba(42,157,143,0.8)",
-              fontFamily: "'Montserrat', sans-serif",
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              fontWeight: 600,
+              fontSize: "0.68rem",
+              color: "rgba(244,247,245,0.5)",
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 500,
             }}
           >
-            Scientific Atelier
+            Care Account
           </div>
         </div>
       </div>
@@ -187,16 +185,16 @@ function DashboardSidebar({
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div
             style={{
-              width: "38px",
-              height: "38px",
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, #2A9D8F, #0D3B44)",
-              border: "1.5px solid rgba(42,157,143,0.5)",
+              width: "36px",
+              height: "36px",
+              borderRadius: "6px",
+              background: "rgba(42,157,143,0.18)",
+              border: "1px solid rgba(42,157,143,0.3)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "1rem",
-              fontWeight: 700,
+              fontSize: "0.95rem",
+              fontWeight: 600,
               color: "#F4F7F5",
               fontFamily: "'Inter', sans-serif",
               flexShrink: 0,
@@ -243,16 +241,14 @@ function DashboardSidebar({
       <nav style={{ flex: 1, padding: "0.75rem 0" }}>
         <div
           style={{
-            padding: "0.35rem 1.25rem 0.25rem",
-            fontSize: "0.6rem",
-            fontWeight: 700,
-            color: "rgba(42,157,143,0.6)",
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            fontFamily: "'Montserrat', sans-serif",
+            padding: "0.5rem 1.25rem 0.25rem",
+            fontSize: "0.72rem",
+            fontWeight: 600,
+            color: "rgba(244, 247, 245, 0.45)",
+            fontFamily: "'Inter', sans-serif",
           }}
         >
-          Laboratory
+          Account navigation
         </div>
         {NAV_ITEMS.map((item) => {
           const active = isActive(item);

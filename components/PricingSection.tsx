@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Crown, Sparkles, Zap } from "lucide-react";
+import { Check } from "lucide-react";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -30,67 +30,66 @@ interface PricingTier {
   name: string;
   price: string;
   priceValue: number;
-  description: string;
+  period: string;
+  tagline: string;
   features: string[];
   cta: string;
-  badge?: string;
-  icon: React.ReactNode;
-  gradient: string;
+  isPopular?: boolean;
+  audienceNote: string;
 }
 
 const tiers: PricingTier[] = [
   {
     id: "bronze",
-    name: "Bronze",
+    name: "Essential Diagnostic",
     price: "₹499",
     priceValue: 499,
-    description: "Essential diagnostics for your hair journey",
+    period: "/ month",
+    tagline: "Baseline scalp intake and targeted single-formula compatibility.",
+    audienceNote: "Best for mild scalp dryness or curiosity",
     features: [
-      "AI Scalp Analysis",
-      "Basic Product Recommendations",
-      "Monthly Progress Tracking",
-      "Email Support",
+      "Full scalp sebum & porosity diagnostic",
+      "Tailored formulation compatibility report",
+      "Hard water ingredient compatibility check",
+      "Email support within 48 hours",
     ],
-    cta: "Get Started",
-    icon: <Sparkles size={22} />,
-    gradient: "linear-gradient(135deg, #CD7F32 0%, #8B5A2B 100%)",
+    cta: "Select Essential",
   },
   {
     id: "silver",
-    name: "Silver",
+    name: "Active Protocol",
     price: "₹999",
     priceValue: 999,
-    description: "Advanced analysis tailored for Indian climate",
+    period: "/ month",
+    tagline: "Continuous formula adjustment for chronic shedding and barrier repair.",
+    audienceNote: "Recommended for hair fall, dandruff or buildup",
+    isPopular: true,
     features: [
-      "Everything in Bronze",
-      "Climate-Adaptive Formulations",
-      "Bi-weekly Check-ins",
-      "Priority Support",
-      "Exclusive Product Discounts",
+      "Everything in Essential Diagnostic",
+      "Seasonal formula refinement (every 60 days)",
+      "Hard water chelating guidance & pH balance",
+      "Bi-weekly photo progress check-in",
+      "15% off all recurring refill orders",
     ],
-    cta: "Claim Your Kit",
-    badge: "Most Popular",
-    icon: <Zap size={22} />,
-    gradient: "linear-gradient(135deg, #C0C0C0 0%, #808080 100%)",
+    cta: "Start Active Protocol",
   },
   {
     id: "gold",
-    name: "Gold",
+    name: "Clinical Care",
     price: "₹1,999",
     priceValue: 1999,
-    description: "Complete lab-grade hair transformation",
+    period: "/ month",
+    tagline: "Direct trichologist oversight and custom-compounded active batches.",
+    audienceNote: "For severe thinning, alopecia, or persistent irritation",
     features: [
-      "Everything in Silver",
-      "Lab-Grade DNA Analysis",
-      "Personalized Trichologist Consultation",
-      "Custom Formulation Access",
-      "24/7 Concierge Support",
-      "Free Shipping on All Orders",
+      "Everything in Active Protocol",
+      "Comprehensive follicle & shedding root-cause review",
+      "1-on-1 virtual consultation with a certified trichologist",
+      "Custom active compounding (copper peptides, minoxidil alternatives)",
+      "Priority messaging with clinical team",
+      "Free priority shipping on all orders",
     ],
-    cta: "Unlock Lab Access",
-    badge: "Premium",
-    icon: <Crown size={22} />,
-    gradient: "linear-gradient(135deg, #D4AF37 0%, #B8860B 100%)",
+    cta: "Select Clinical Care",
   },
 ];
 
@@ -172,8 +171,8 @@ export default function PricingSection() {
   };
 
   return (
-    <section style={{ padding: "6rem 1.5rem", background: B.cream }} id="pricing">
-      <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
+    <section style={{ padding: "6rem 1.5rem", background: "#F4F7F5" }} id="pricing">
+      <div style={{ maxWidth: "1240px", margin: "0 auto" }}>
         {/* Header */}
         <motion.div
           initial="hidden"
@@ -185,29 +184,30 @@ export default function PricingSection() {
             variants={fadeUp}
             custom={0}
             style={{
-              fontFamily: "'Montserrat', sans-serif",
-              fontSize: "0.65rem",
-              fontWeight: 700,
-              letterSpacing: "0.2em",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: B.seafoam,
-              marginBottom: "10px",
+              color: "#2A9D8F",
+              marginBottom: "0.75rem",
             }}
           >
-            Membership Tiers
+            Care Subscriptions
           </motion.p>
           <motion.h2
             variants={fadeUp}
             custom={1}
             style={{
-              fontFamily: "'Playfair Display', serif",
-              fontWeight: 800,
-              fontSize: "clamp(2rem, 4vw, 3rem)",
-              color: B.teal,
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontWeight: 700,
+              fontSize: "clamp(2rem, 3.5vw, 2.75rem)",
+              color: "#0D3B44",
               marginBottom: "1rem",
+              lineHeight: 1.2,
             }}
           >
-            Select Your Diagnostic Tier
+            Predictable, transparent scalp care.
           </motion.h2>
           <motion.p
             variants={fadeUp}
@@ -216,13 +216,12 @@ export default function PricingSection() {
               fontFamily: "'Inter', sans-serif",
               fontSize: "0.95rem",
               color: "#4A6B63",
-              maxWidth: "540px",
+              maxWidth: "520px",
               margin: "0 auto",
               lineHeight: 1.65,
             }}
           >
-            Precision hair care designed for Indian climate and biology. Choose
-            the plan that matches your transformation goals.
+            No hidden fees or locked contracts. Pause, adjust, or cancel anytime from your dashboard.
           </motion.p>
         </motion.div>
 
@@ -232,6 +231,7 @@ export default function PricingSection() {
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
             gap: "1.75rem",
+            alignItems: "stretch",
           }}
           className="pricing-grid"
         >
@@ -243,82 +243,83 @@ export default function PricingSection() {
               whileInView="visible"
               viewport={{ once: true, margin: "-60px" }}
               custom={i}
-              whileHover={{ y: -8 }}
               style={{
-                position: "relative",
-                borderRadius: "1.5rem",
-                padding: "2rem",
+                borderRadius: "1rem",
+                padding: "2.25rem 2rem",
                 background: "#FFFFFF",
-                border: tier.badge
-                  ? `2px solid ${B.seafoam}`
-                  : "1px solid #E8EDEB",
-                boxShadow: tier.badge
-                  ? "0 16px 48px rgba(42,157,143,0.15)"
-                  : "0 12px 40px rgba(13,59,68,0.07)",
-                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                border: tier.isPopular ? "1.5px solid #2A9D8F" : "1px solid #E8EDEB",
+                boxShadow: tier.isPopular
+                  ? "0 4px 20px rgba(13, 59, 68, 0.08)"
+                  : "0 2px 8px rgba(13, 59, 68, 0.03)",
+                display: "flex",
+                flexDirection: "column",
+                position: "relative",
               }}
             >
-              {/* Badge */}
-              {tier.badge && (
+              {/* Recommended pill */}
+              {tier.isPopular && (
                 <div
                   style={{
                     position: "absolute",
-                    top: "-12px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    padding: "4px 16px",
+                    top: "-11px",
+                    left: "2rem",
+                    padding: "2px 10px",
                     borderRadius: "9999px",
-                    background: tier.gradient,
+                    background: "#2A9D8F",
                     color: "#FFFFFF",
-                    fontSize: "0.65rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    fontFamily: "'Montserrat', sans-serif",
+                    fontSize: "0.7rem",
+                    fontWeight: 600,
+                    letterSpacing: "0.04em",
+                    fontFamily: "'Inter', sans-serif",
                   }}
                 >
-                  {tier.badge}
+                  Most popular
                 </div>
               )}
 
-              {/* Icon */}
+              {/* Tier Name & audience note */}
+              <div style={{ marginBottom: "1rem" }}>
+                <h3
+                  style={{
+                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontWeight: 700,
+                    fontSize: "1.35rem",
+                    color: "#0D3B44",
+                    marginBottom: "0.25rem",
+                  }}
+                >
+                  {tier.name}
+                </h3>
+                <p
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: "0.78rem",
+                    color: "#9AABA5",
+                    margin: 0,
+                  }}
+                >
+                  {tier.audienceNote}
+                </p>
+              </div>
+
+              {/* Price */}
               <div
                 style={{
-                  width: "56px",
-                  height: "56px",
-                  borderRadius: "14px",
-                  background: tier.gradient,
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#FFFFFF",
+                  alignItems: "baseline",
+                  gap: "6px",
+                  paddingBottom: "1.25rem",
+                  borderBottom: "1px solid #E8EDEB",
                   marginBottom: "1.25rem",
                 }}
               >
-                {tier.icon}
-              </div>
-
-              {/* Tier Name */}
-              <h3
-                style={{
-                  fontFamily: "'Playfair Display', serif",
-                  fontWeight: 700,
-                  fontSize: "1.5rem",
-                  color: B.teal,
-                  marginBottom: "0.5rem",
-                }}
-              >
-                {tier.name}
-              </h3>
-
-              {/* Price */}
-              <div style={{ marginBottom: "1rem" }}>
                 <span
                   style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontWeight: 800,
-                    fontSize: "2.5rem",
-                    color: B.teal,
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 700,
+                    fontSize: "2.25rem",
+                    color: "#0D3B44",
+                    letterSpacing: "-0.02em",
                   }}
                 >
                   {tier.price}
@@ -326,12 +327,11 @@ export default function PricingSection() {
                 <span
                   style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: "0.9rem",
+                    fontSize: "0.85rem",
                     color: "#9AABA5",
-                    marginLeft: "6px",
                   }}
                 >
-                  /month
+                  {tier.period}
                 </span>
               </div>
 
@@ -339,17 +339,28 @@ export default function PricingSection() {
               <p
                 style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: "0.875rem",
+                  fontSize: "0.85rem",
                   color: "#4A6B63",
                   lineHeight: 1.6,
                   marginBottom: "1.5rem",
                 }}
               >
-                {tier.description}
+                {tier.tagline}
               </p>
 
               {/* Features */}
-              <ul style={{ marginBottom: "1.75rem", listStyle: "none", padding: 0 }}>
+              <ul
+                style={{
+                  marginBottom: "2rem",
+                  listStyle: "none",
+                  padding: 0,
+                  margin: "0 0 2rem 0",
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.75rem",
+                }}
+              >
                 {tier.features.map((feature) => (
                   <li
                     key={feature}
@@ -357,19 +368,18 @@ export default function PricingSection() {
                       display: "flex",
                       alignItems: "flex-start",
                       gap: "10px",
-                      marginBottom: "10px",
                     }}
                   >
                     <Check
-                      size={16}
-                      color={B.seafoam}
-                      style={{ flexShrink: 0, marginTop: "2px" }}
+                      size={15}
+                      color="#2A9D8F"
+                      style={{ flexShrink: 0, marginTop: "3px" }}
                     />
                     <span
                       style={{
                         fontFamily: "'Inter', sans-serif",
-                        fontSize: "0.85rem",
-                        color: "#4A6B63",
+                        fontSize: "0.83rem",
+                        color: "#1C2B28",
                         lineHeight: 1.5,
                       }}
                     >
@@ -385,16 +395,16 @@ export default function PricingSection() {
                 disabled={loadingTier === tier.id}
                 style={{
                   width: "100%",
-                  padding: "0.875rem 1.5rem",
+                  padding: "0.8rem 1.5rem",
                   borderRadius: "9999px",
-                  border: "none",
-                  background: tier.badge ? tier.gradient : B.teal,
-                  color: "#FFFFFF",
-                  fontFamily: "'Montserrat', sans-serif",
+                  border: tier.isPopular ? "none" : "1.5px solid #0D3B44",
+                  background: tier.isPopular ? "#0D3B44" : "transparent",
+                  color: tier.isPopular ? "#FFFFFF" : "#0D3B44",
+                  fontFamily: "'Inter', sans-serif",
                   fontWeight: 600,
-                  fontSize: "0.9rem",
+                  fontSize: "0.875rem",
                   cursor: loadingTier === tier.id ? "not-allowed" : "pointer",
-                  transition: "transform 0.2s ease, opacity 0.2s ease",
+                  transition: "background 0.2s ease, color 0.2s ease, opacity 0.2s ease",
                   opacity: loadingTier === tier.id ? 0.7 : 1,
                   display: "flex",
                   alignItems: "center",
@@ -403,28 +413,36 @@ export default function PricingSection() {
                 }}
                 onMouseEnter={(e) => {
                   if (loadingTier !== tier.id) {
-                    (e.currentTarget as HTMLElement).style.transform =
-                      "translateY(-2px)";
+                    if (tier.isPopular) {
+                      (e.currentTarget as HTMLElement).style.background = "#1A5568";
+                    } else {
+                      (e.currentTarget as HTMLElement).style.background = "#0D3B44";
+                      (e.currentTarget as HTMLElement).style.color = "#FFFFFF";
+                    }
                   }
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.transform =
-                    "translateY(0)";
+                  if (tier.isPopular) {
+                    (e.currentTarget as HTMLElement).style.background = "#0D3B44";
+                  } else {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                    (e.currentTarget as HTMLElement).style.color = "#0D3B44";
+                  }
                 }}
               >
                 {loadingTier === tier.id ? (
                   <>
                     <div
                       style={{
-                        width: "16px",
-                        height: "16px",
+                        width: "14px",
+                        height: "14px",
                         borderRadius: "50%",
-                        border: "2px solid #FFFFFF",
+                        border: "2px solid currentColor",
                         borderTopColor: "transparent",
                         animation: "spin 0.6s linear infinite",
                       }}
                     />
-                    Processing...
+                    Saving selection...
                   </>
                 ) : (
                   tier.cta
@@ -433,10 +451,23 @@ export default function PricingSection() {
             </motion.div>
           ))}
         </div>
+
+        {/* Reassurance note */}
+        <p
+          style={{
+            textAlign: "center",
+            marginTop: "2.5rem",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "0.78rem",
+            color: "#9AABA5",
+          }}
+        >
+          All diagnostic plans include initial scalp compatibility mapping. Free shipping on all formula deliveries.
+        </p>
       </div>
 
       <style>{`
-        @media (max-width: 1024px) {
+        @media (max-width: 960px) {
           .pricing-grid { grid-template-columns: 1fr !important; max-width: 480px; margin: 0 auto; }
         }
         @keyframes spin { to { transform: rotate(360deg); } }

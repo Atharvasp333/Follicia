@@ -45,27 +45,24 @@ const comparisonData = [
   { label: "Trial & Error", value: 24, isBrand: false },
 ];
 
-const steps = [
+const protocolSteps = [
   {
-    num: "01",
-    icon: <Microscope size={26} />,
-    title: "AI Analysis",
-    desc: "Complete our 90-second assessment. Our AI analyses your scalp type, lifestyle, environment, and goals.",
-    color: "#D4AF37",
+    step: "01",
+    title: "Scalp & environmental intake",
+    summary: "A 90-second diagnostic covering scalp sebum levels, local tap water hardness, heat styling frequency, and shedding concerns.",
+    tag: "90 seconds online",
   },
   {
-    num: "02",
-    icon: <BarChart2 size={26} />,
-    title: "Precision Matching",
-    desc: "Cross-references 2,400+ formulations against your profile to build a bespoke regimen.",
-    color: "#2A9D8F",
+    step: "02",
+    title: "Targeted formulation compounding",
+    summary: "We match clinically studied botanical actives and amino complexes to your scalp barrier state and hair porosity.",
+    tag: "Batch-compounded",
   },
   {
-    num: "03",
-    icon: <Package size={26} />,
-    title: "Clinical Delivery",
-    desc: "Eco-conscious packaging, personalised protocol guide, and smart refill reminders.",
-    color: "#4DBCB0",
+    step: "03",
+    title: "Delivered fresh with protocol card",
+    summary: "Your bottles arrive with exact dosage guidelines and application timing, followed by scheduled check-ins at 30 and 60 days.",
+    tag: "Free shipping & refills",
   },
 ];
 
@@ -333,164 +330,224 @@ export default function HomePage() {
 
       {/* ══ HOW IT WORKS ════════════════════════════════ */}
       <section
-        style={{ padding: "6rem 1.5rem", background: "#0D3B44" }}
+        style={{ padding: "6rem 1.5rem", background: "#0D3B44", color: "#F4F7F5" }}
         id="how-it-works"
       >
-        <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            style={{ textAlign: "center", marginBottom: "3.5rem" }}
-          >
-            <motion.p
-              variants={fadeUp}
-              custom={0}
-              style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontSize: "0.65rem",
-                fontWeight: 700,
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                color: "#2A9D8F",
-                marginBottom: "10px",
-              }}
-            >
-              The Protocol
-            </motion.p>
-            <motion.h2
-              variants={fadeUp}
-              custom={1}
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                fontWeight: 800,
-                fontSize: "clamp(2rem, 4vw, 3rem)",
-                color: "#F4F7F5",
-                marginBottom: "1rem",
-              }}
-            >
-              How It Works
-            </motion.h2>
-            <motion.p
-              variants={fadeUp}
-              custom={2}
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: "0.95rem",
-                color: "rgba(244,247,245,0.6)",
-                maxWidth: "440px",
-                margin: "0 auto",
-              }}
-            >
-              Three clinical steps from assessment to transformation.
-            </motion.p>
-          </motion.div>
-
+        <div style={{ maxWidth: "1240px", margin: "0 auto" }}>
           <div
+            className="how-it-works-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "1.75rem",
-              marginBottom: "3rem",
+              gridTemplateColumns: "1fr 1.25fr",
+              gap: "4.5rem",
+              alignItems: "start",
             }}
-            className="steps-grid"
           >
-            {steps.map((s, i) => (
-              <motion.div
-                key={s.num}
+            {/* Left Column: Context, value prop & direct action */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-60px" }}
+            >
+              <motion.p
                 variants={fadeUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-60px" }}
-                custom={i}
-                whileHover={{ y: -6 }}
+                custom={0}
                 style={{
-                  borderRadius: "1.5rem",
-                  padding: "2rem",
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  position: "relative",
-                  overflow: "hidden",
-                  transition: "transform 0.3s ease",
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "#2A9D8F",
+                  marginBottom: "0.75rem",
                 }}
               >
-                {/* Ghost step number */}
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "1rem",
-                    right: "1.25rem",
-                    fontFamily: "'Playfair Display', serif",
-                    fontWeight: 800,
-                    fontSize: "4.5rem",
-                    color: s.color,
-                    opacity: 0.1,
-                    lineHeight: 1,
-                    userSelect: "none",
-                  }}
-                >
-                  {s.num}
-                </span>
-
-                {/* Icon */}
-                <div
-                  style={{
-                    width: "52px",
-                    height: "52px",
-                    borderRadius: "14px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: `${s.color}22`,
-                    color: s.color,
-                    marginBottom: "1.25rem",
-                  }}
-                >
-                  {s.icon}
-                </div>
-
-                <h3
-                  style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontWeight: 700,
-                    fontSize: "1.15rem",
-                    color: "#F4F7F5",
-                    marginBottom: "0.75rem",
-                  }}
-                >
-                  {s.title}
-                </h3>
-                <p
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: "0.875rem",
-                    color: "rgba(244,247,245,0.6)",
-                    lineHeight: 1.65,
-                  }}
-                >
-                  {s.desc}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-
-          <div style={{ textAlign: "center" }}>
-            <Link href="/quiz">
-              <motion.button
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                className="btn-gold"
-                style={{ fontSize: "1rem", padding: "1rem 2.5rem" }}
+                The Process
+              </motion.p>
+              <motion.h2
+                variants={fadeUp}
+                custom={1}
+                style={{
+                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontWeight: 700,
+                  fontSize: "clamp(2rem, 3.5vw, 2.75rem)",
+                  color: "#F4F7F5",
+                  lineHeight: 1.2,
+                  marginBottom: "1.25rem",
+                }}
               >
-                <Sparkles size={18} />
-                Start My 90-Second Assessment
-                <ArrowRight size={18} />
-              </motion.button>
-            </Link>
+                Formulated for your scalp, adjusted every season.
+              </motion.h2>
+              <motion.p
+                variants={fadeUp}
+                custom={2}
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "0.95rem",
+                  color: "rgba(244, 247, 245, 0.7)",
+                  lineHeight: 1.7,
+                  marginBottom: "2rem",
+                  maxWidth: "460px",
+                }}
+              >
+                Commercial shampoos and treatments sit on retail shelves for up to three years. We batch-formulate active serums and cleansers suited to your water hardness, scalp microbiome, and styling habits.
+              </motion.p>
+
+              <motion.div
+                variants={fadeUp}
+                custom={3}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.85rem",
+                  padding: "1.5rem",
+                  borderRadius: "1rem",
+                  background: "rgba(255, 255, 255, 0.04)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  marginBottom: "2.25rem",
+                  maxWidth: "460px",
+                }}
+              >
+                {[
+                  "Freshly compounded in 50ml dark glass bottles",
+                  "Balanced to scalp-friendly pH 5.0 – 5.5",
+                  "Free formula refinement after your 30-day check-in",
+                ].map((item) => (
+                  <div key={item} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <CheckCircle size={15} color="#2A9D8F" style={{ flexShrink: 0 }} />
+                    <span
+                      style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: "0.85rem",
+                        color: "rgba(244, 247, 245, 0.85)",
+                      }}
+                    >
+                      {item}
+                    </span>
+                  </div>
+                ))}
+              </motion.div>
+
+              <motion.div variants={fadeUp} custom={4}>
+                <Link href="/quiz" style={{ textDecoration: "none" }}>
+                  <motion.button
+                    whileHover={{ opacity: 0.92, y: -1 }}
+                    whileTap={{ scale: 0.98 }}
+                    style={{
+                      background: "#2A9D8F",
+                      color: "#FFFFFF",
+                      border: "none",
+                      borderRadius: "9999px",
+                      padding: "0.85rem 1.75rem",
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: 600,
+                      fontSize: "0.9rem",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      cursor: "pointer",
+                      transition: "background 0.2s ease, transform 0.2s ease",
+                    }}
+                  >
+                    Take the 90-second hair quiz
+                    <ArrowRight size={15} />
+                  </motion.button>
+                </Link>
+              </motion.div>
+            </motion.div>
+
+            {/* Right Column: Progressive sequential stages */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              {protocolSteps.map((s, idx) => (
+                <motion.div
+                  key={s.step}
+                  variants={fadeUp}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-40px" }}
+                  custom={idx}
+                  style={{
+                    padding: "1.75rem 2rem",
+                    borderRadius: "1rem",
+                    background: "rgba(255, 255, 255, 0.03)",
+                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                    display: "flex",
+                    gap: "1.5rem",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: 700,
+                      fontSize: "1.25rem",
+                      color: "#2A9D8F",
+                      lineHeight: 1,
+                      paddingTop: "3px",
+                      minWidth: "32px",
+                    }}
+                  >
+                    {s.step}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        flexWrap: "wrap",
+                        gap: "8px",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      <h3
+                        style={{
+                          fontFamily: "'Playfair Display', Georgia, serif",
+                          fontSize: "1.15rem",
+                          fontWeight: 700,
+                          color: "#F4F7F5",
+                          margin: 0,
+                        }}
+                      >
+                        {s.title}
+                      </h3>
+                      <span
+                        style={{
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: "0.72rem",
+                          color: "#9AABA5",
+                          background: "rgba(255, 255, 255, 0.05)",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        {s.tag}
+                      </span>
+                    </div>
+                    <p
+                      style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: "0.875rem",
+                        color: "rgba(244, 247, 245, 0.65)",
+                        lineHeight: 1.6,
+                        margin: 0,
+                      }}
+                    >
+                      {s.summary}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
         <style>{`
-          @media (max-width: 767px) { .steps-grid { grid-template-columns: 1fr !important; } }
+          @media (max-width: 960px) {
+            .how-it-works-grid {
+              grid-template-columns: 1fr !important;
+              gap: 3rem !important;
+            }
+          }
         `}</style>
       </section>
 
